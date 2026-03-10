@@ -1,12 +1,14 @@
+import { EtheralShadow } from "@/components/ui/etheral-shadow";
+
 export function HeroSection() {
   return (
     <section className="hero">
-      <div
-        className="hero-bg"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80')",
-        }}
+      <EtheralShadow
+        color="rgba(0, 140, 160, 1)"
+        animation={{ scale: 100, speed: 90 }}
+        noise={{ opacity: 1, scale: 1.2 }}
+        sizing="fill"
+        style={{ position: "absolute", inset: 0 }}
       />
       <div className="hero-content">
         <h1>
