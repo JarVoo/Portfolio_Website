@@ -2,7 +2,7 @@
 
 import React, { useRef, useId, useEffect, CSSProperties } from 'react';
 import { animate, useMotionValue } from 'motion/react';
-import type { AnimationPlaybackControls } from 'motion';
+import type { AnimationPlaybackControls } from 'motion/react';
 
 interface AnimationConfig {
   preview?: boolean;
