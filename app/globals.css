@@ -561,12 +561,17 @@ footer {
 }
 
 .post-tag {
-  background: var(--color-dark);
+  background: #1a1a1a;
   color: #fff;
   font-size: 0.65rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 0.2rem 0.55rem;
+}
+
+.dark .post-tag {
+  background: #2f3436;
+  color: #e5e5e5;
 }
 
 .post-content h1 {
