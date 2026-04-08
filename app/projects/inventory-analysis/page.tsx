@@ -36,13 +36,13 @@ export default function InventoryAnalysisPage() {
 
         <h2>Introduction</h2>
         <p>
-          Retailers face two costly inventory problems simultaneously &mdash; stock that sits unsold tying up cash, and stock that runs out before replenishment arrives losing sales. This project builds a full analytical pipeline to identify which products are affected, quantify the impact, and surface data-driven reorder recommendations.
+          Retailers face two costly inventory problems simultaneously: stock that sits unsold tying up cash, and stock that runs out before replenishment arrives losing sales. This project builds a full analytical pipeline to identify which products are affected, quantify the impact, and surface data-driven reorder recommendations.
         </p>
         <p>
           Data is ingested via S3 and stored in Snowflake. The data is transformed in dbt, documentation recorded, and testing procedures put in place to export to Power BI where stockout rates, overstock patterns, inventory turnover, and reorder gaps are visualised in a single operational dashboard.
         </p>
         <p>
-          The dataset is sourced from <a href="https://www.kaggle.com/datasets/anirudhchauhan/retail-store-inventory-forecasting-dataset" target="_blank" rel="noopener noreferrer">Kaggle</a> and is composed of synthetic data for a fictitious company. However it is realistic for analysing and forecasting retail store inventory demand &mdash; containing over 73,000 rows across five stores and twenty products.
+          The dataset is sourced from <a href="https://www.kaggle.com/datasets/anirudhchauhan/retail-store-inventory-forecasting-dataset" target="_blank" rel="noopener noreferrer">Kaggle</a> and is composed of synthetic data for a fictitious company. However it is realistic for analysing and forecasting retail store inventory demand: containing over 73,000 rows across five stores and twenty products.
         </p>
 
         <h2>Going Beyond the Dataset</h2>
@@ -50,10 +50,10 @@ export default function InventoryAnalysisPage() {
           This dataset was published as a machine learning challenge, designed for demand forecasting models, LSTM networks, and dynamic pricing experiments typically explored in Jupyter notebooks.
         </p>
         <p>
-          Rather than following that path, I took the same data and built something closer to a production analytics environment &mdash; a fully layered data warehouse with RAW, CORE, and MART separation, 39 automated data quality tests, and documented models. The kind of infrastructure a real retail analytics team would operate on.
+          Rather than following that path, I took the same data and built something closer to a production analytics environment: a fully layered data warehouse with RAW, CORE, and MART separation, 39 automated data quality tests, and documented models. The kind of infrastructure a real retail analytics team would operate on.
         </p>
         <p>
-          The analysis focused not on prediction but on diagnosis &mdash; identifying where the inventory system is failing today, why it is failing, and what specific changes would fix it. The findings around reorder point misconfiguration, systematic forecast bias, and replenishment timing are immediately actionable without a single machine learning model.
+          The analysis focused not on prediction but on diagnosis: identifying where the inventory system is failing today, why it is failing, and what specific changes would fix it. The findings around reorder point misconfiguration, systematic forecast bias, and replenishment timing are immediately actionable without a single machine learning model.
         </p>
 
         <h2>Problem Statement</h2>
@@ -72,7 +72,7 @@ export default function InventoryAnalysisPage() {
           <li>Storage costs accumulate on slow-moving items</li>
         </ul>
         <p>
-          These two errors often have the same root cause &mdash; reorder points and demand forecasts that don&apos;t reflect actual sales patterns. You order too late and run out, or you over-correct and order too much.
+          These two errors often have the same root cause: reorder points and demand forecasts that don&apos;t reflect actual sales patterns. You order too late and run out, or you over-correct and order too much.
         </p>
 
         <h2>Architecture</h2>
@@ -80,9 +80,9 @@ export default function InventoryAnalysisPage() {
         <img src="/projects/inventory-analysis/dbt-lineage.png" alt="dbt Lineage Graph" className="post-img" />
         <p>Data flows through three layers:</p>
         <ul>
-          <li><strong>RAW</strong> &mdash; source tables loaded directly from S3 into Snowflake via COPY INTO. No transformations applied.</li>
-          <li><strong>CORE</strong> &mdash; one view per source table. Casts data types, adds boolean flags, and derives basic fields. Built as views so they always reflect current RAW data.</li>
-          <li><strong>MART</strong> &mdash; aggregated tables built on CORE models. Each mart answers a specific business question and is materialised as a table for query performance.</li>
+          <li><strong>RAW</strong>: source tables loaded directly from S3 into Snowflake via COPY INTO. No transformations applied.</li>
+          <li><strong>CORE</strong>: one view per source table. Casts data types, adds boolean flags, and derives basic fields. Built as views so they always reflect current RAW data.</li>
+          <li><strong>MART</strong>: aggregated tables built on CORE models. Each mart answers a specific business question and is materialised as a table for query performance.</li>
         </ul>
 
         <h2>Tech Stack</h2>
@@ -91,8 +91,8 @@ export default function InventoryAnalysisPage() {
             <tr><th>Tool</th><th>Purpose</th></tr>
           </thead>
           <tbody>
-            <tr><td>Amazon S3</td><td>Cloud storage &mdash; raw CSV file landing zone</td></tr>
-            <tr><td>Snowflake</td><td>Cloud data warehouse &mdash; RAW, CORE, and MART layers</td></tr>
+            <tr><td>Amazon S3</td><td>Cloud storage: raw CSV file landing zone</td></tr>
+            <tr><td>Snowflake</td><td>Cloud data warehouse: RAW, CORE, and MART layers</td></tr>
             <tr><td>dbt Core</td><td>Transformation, testing, and documentation</td></tr>
             <tr><td>Power BI</td><td>Dashboard and visualisation layer</td></tr>
             <tr><td>Git &amp; GitHub</td><td>Version control</td></tr>
@@ -145,10 +145,10 @@ export default function InventoryAnalysisPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/projects/inventory-analysis/finding-1.png" alt="Reorder Analysis" className="post-img" />
         <p>
-          Every product in the catalogue has a current reorder point set far below what actual sales data suggests it should be. The worst case is Casual T-Shirt, currently configured to trigger a reorder at 113 units but based on average daily sales multiplied by supplier lead time, the correct trigger point is 1,943 units &mdash; a gap of 1,830 units.
+          Every product in the catalogue has a current reorder point set far below what actual sales data suggests it should be. The worst case is Casual T-Shirt, currently configured to trigger a reorder at 113 units but based on average daily sales multiplied by supplier lead time, the correct trigger point is 1,943 units: a gap of 1,830 units.
         </p>
         <p>
-          This means that by the time a reorder is placed, there is not enough stock remaining to last through the supplier&apos;s delivery window. Stockouts are structurally inevitable under the current configuration. This is not a product-specific issue &mdash; every single product shows a positive reorder gap, indicating a systemic misconfiguration across the entire inventory system.
+          This means that by the time a reorder is placed, there is not enough stock remaining to last through the supplier&apos;s delivery window. Stockouts are structurally inevitable under the current configuration. This is not a product-specific issue: every single product shows a positive reorder gap, indicating a systemic misconfiguration across the entire inventory system.
         </p>
 
         <h3>Finding 2: Demand Forecasts Systematically Overestimate Sales</h3>
@@ -158,7 +158,7 @@ export default function InventoryAnalysisPage() {
           Across all 20 products, the demand forecast consistently overestimates actual sales by approximately 3.5%. While this may appear minor, the consistency across every product suggests the forecasting inputs or assumptions are uniformly optimistic.
         </p>
         <p>
-          In practice this leads to ordering slightly more stock than demand requires, which compounds the overstock problem. A well-calibrated forecast should show deviations distributed around zero &mdash; some products over, some under. A one-directional bias across the entire catalogue signals the forecast model needs recalibration.
+          In practice this leads to ordering slightly more stock than demand requires, which compounds the overstock problem. A well-calibrated forecast should show deviations distributed around zero: some products over, some under. A one-directional bias across the entire catalogue signals the forecast model needs recalibration.
         </p>
 
         <h3>Finding 3: Products Are Simultaneously Overstocked and Experiencing Stockouts</h3>
@@ -168,14 +168,14 @@ export default function InventoryAnalysisPage() {
           The most counterintuitive finding is that products can be overstocked and stockout at the same time. Canned Tomatoes, for example, is overstocked on 50% of trading days yet still experiences stockouts.
         </p>
         <p>
-          Stock arrives in large batches creating a temporary overstock, sells down over time, runs out before the next order arrives, and then the cycle repeats. The root cause is not the reorder quantity but the reorder timing. Products in the high overstock and high stockout quadrant are the highest priority for replenishment cycle redesign &mdash; adjusting order frequency rather than order size.
+          Stock arrives in large batches creating a temporary overstock, sells down over time, runs out before the next order arrives, and then the cycle repeats. The root cause is not the reorder quantity but the reorder timing. Products in the high overstock and high stockout quadrant are the highest priority for replenishment cycle redesign: adjusting order frequency rather than order size.
         </p>
 
         <h3>Finding 4: Inventory Turnover Is Below Benchmark</h3>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/projects/inventory-analysis/finding-4.png" alt="Inventory Turnover" className="post-img" />
         <p>
-          Inventory turnover measures how efficiently stock is being converted into sales. A healthy retail operation typically targets a turnover ratio of 4&ndash;12x per year. In this dataset, turnover ratios range from 0.72 to 1.25 &mdash; well below any retail benchmark.
+          Inventory turnover measures how efficiently stock is being converted into sales. A healthy retail operation typically targets a turnover ratio of 4-12x per year. In this dataset, turnover ratios range from 0.72 to 1.25: well below any retail benchmark.
         </p>
         <p>
           This means stock is sitting in the warehouse longer than it should be relative to the value being sold. Action Figure Set and Classic LEGO Set have the lowest turnover at 0.72 and 0.78 respectively, indicating these products tie up the most cash relative to their sales velocity.
@@ -186,10 +186,10 @@ export default function InventoryAnalysisPage() {
           Reorder points across all 20 products should be recalculated immediately using actual average daily sales multiplied by supplier lead time. The current configuration is underset across the entire catalogue, with Casual T-Shirt, Organic Oats, and USB-C Hub carrying the largest gaps. Until this is corrected, stockouts are structurally unavoidable regardless of how much stock is ordered.
         </p>
         <p>
-          The demand forecasting model requires recalibration. A consistent 3.5% overestimate across every product is not random error &mdash; it is a systematic bias that compounds overstock levels over time.
+          The demand forecasting model requires recalibration. A consistent 3.5% overestimate across every product is not random error: it is a systematic bias that compounds overstock levels over time.
         </p>
         <p>
-          For products simultaneously experiencing high overstock and stockout rates &mdash; particularly Canned Tomatoes, Smart Home Speaker, and Dining Table Oak &mdash; the solution is not to order more but to order more frequently in smaller batches. The replenishment cycle is the problem, not the volume.
+          For products simultaneously experiencing high overstock and stockout rates: particularly Canned Tomatoes, Smart Home Speaker, and Dining Table Oak: the solution is not to order more but to order more frequently in smaller batches. The replenishment cycle is the problem, not the volume.
         </p>
         <p>
           Finally, the eight products with inventory turnover below 0.85 should be reviewed for promotional intervention. Action Figure Set and Classic LEGO Set are tying up the most cash relative to their sales velocity. Targeted discounting or bundling strategies would accelerate sell-through and improve overall capital efficiency.
