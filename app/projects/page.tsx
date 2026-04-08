@@ -25,13 +25,13 @@ const PROJECTS: {
   thumb: string;
 }[] = [
   {
-    slug: "olist-ecommerce",
-    category: "e-commerce",
-    date: "Jul 28, 2024",
-    title: "E-Commerce Project – Olist Brazilian Online Marketplace",
+    slug: "inventory-analysis",
+    category: "operations-analysis",
+    date: "Apr 8, 2026",
+    title: "Retail Inventory Intelligence – S3, Snowflake, dbt & Power BI",
     excerpt:
-      "I was excited to find a real-world ecommerce dataset with multiple relatable tables. I was bored of working on datasets that didn't seem to add any value to my learning. I wanted to develop skills that would directly translate to a real work environment…",
-    thumb: "/projects/olist-thumb.png",
+      "An end-to-end analytics pipeline diagnosing stockout risk, overstock patterns, and reorder optimisation across a retail inventory system using Amazon S3, Snowflake, dbt Core, and Power BI…",
+    thumb: "/projects/inventory-analysis/2148767163.jpg",
   },
   {
     slug: "amazon-sql",
@@ -41,6 +41,15 @@ const PROJECTS: {
     excerpt:
       "Difficulty level: Advanced | GitHub Link — I have worked on analyzing a dataset of Amazon USA sales to uncover trends, top-performing categories, and actionable business insights…",
     thumb: "/projects/amazon-thumb.jpg",
+  },
+  {
+    slug: "us-career-excel",
+    category: "sales-analysis",
+    date: "Sep 6, 2024",
+    title: "US Career Navigator Dashboard in Excel",
+    excerpt:
+      "An interactive Excel dashboard built for a non-profit to help high school students navigate career decisions — visualising median wages by profession, industry, and state across the United States with dynamic filtering…",
+    thumb: "/projects/us-career-thumb.jpg",
   },
   {
     slug: "pet-store-powerbi",
@@ -61,24 +70,6 @@ const PROJECTS: {
     thumb: "/projects/healthcare/hero.jpg",
   },
   {
-    slug: "us-career-excel",
-    category: "sales-analysis",
-    date: "Sep 6, 2024",
-    title: "US Career Navigator Dashboard in Excel",
-    excerpt:
-      "An interactive Excel dashboard built for a non-profit to help high school students navigate career decisions — visualising median wages by profession, industry, and state across the United States with dynamic filtering…",
-    thumb: "/projects/us-career-thumb.jpg",
-  },
-  {
-    slug: "inventory-analysis",
-    category: "operations-analysis",
-    date: "Apr 8, 2026",
-    title: "Retail Inventory Intelligence – S3, Snowflake, dbt & Power BI",
-    excerpt:
-      "An end-to-end analytics pipeline diagnosing stockout risk, overstock patterns, and reorder optimisation across a retail inventory system using Amazon S3, Snowflake, dbt Core, and Power BI…",
-    thumb: "/projects/inventory-analysis/2148767163.jpg",
-  },
-  {
     slug: "web-analytics-sql-python",
     category: "web-analysis",
     date: "Sep 4, 2024",
@@ -86,6 +77,15 @@ const PROJECTS: {
     excerpt:
       "A website traffic analysis for Maven Fuzzy Factory combining SQL and Python to investigate traffic sources, conversion funnels, and session performance — including identifying and resolving data anomalies in the tracking pipeline…",
     thumb: "/projects/web-analytics-thumb.jpg",
+  },
+  {
+    slug: "olist-ecommerce",
+    category: "e-commerce",
+    date: "Jul 28, 2024",
+    title: "E-Commerce Project – Olist Brazilian Online Marketplace",
+    excerpt:
+      "I was excited to find a real-world ecommerce dataset with multiple relatable tables. I was bored of working on datasets that didn't seem to add any value to my learning. I wanted to develop skills that would directly translate to a real work environment…",
+    thumb: "/projects/olist-thumb.png",
   },
 ];
 
