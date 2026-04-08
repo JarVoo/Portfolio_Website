@@ -5,7 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 
-type Filter = "all" | "e-commerce" | "health-care" | "sales-analysis" | "web-analysis";
+type Filter = "all" | "e-commerce" | "health-care" | "sales-analysis" | "web-analysis" | "operations-analysis";
 
 const FILTERS: { label: string; value: Filter }[] = [
   { label: "All Posts", value: "all" },
@@ -13,6 +13,7 @@ const FILTERS: { label: string; value: Filter }[] = [
   { label: "Health Care", value: "health-care" },
   { label: "Sales Analysis", value: "sales-analysis" },
   { label: "Web Analysis", value: "web-analysis" },
+  { label: "Operations Analysis", value: "operations-analysis" },
 ];
 
 const PROJECTS: {
@@ -67,6 +68,15 @@ const PROJECTS: {
     excerpt:
       "An interactive Excel dashboard built for a non-profit to help high school students navigate career decisions — visualising median wages by profession, industry, and state across the United States with dynamic filtering…",
     thumb: "/projects/us-career-thumb.jpg",
+  },
+  {
+    slug: "inventory-analysis",
+    category: "operations-analysis",
+    date: "Apr 8, 2026",
+    title: "Retail Inventory Intelligence – S3, Snowflake, dbt & Power BI",
+    excerpt:
+      "An end-to-end analytics pipeline diagnosing stockout risk, overstock patterns, and reorder optimisation across a retail inventory system using Amazon S3, Snowflake, dbt Core, and Power BI…",
+    thumb: "/projects/inventory-analysis/2148767163.jpg",
   },
   {
     slug: "web-analytics-sql-python",
