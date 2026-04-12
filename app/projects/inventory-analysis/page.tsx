@@ -32,6 +32,10 @@ export default function InventoryAnalysisPage() {
           <a href="https://github.com/JarVoo/inventory_analysis_project" target="_blank" rel="noopener noreferrer">
             GitHub Repository
           </a>
+          {" | "}
+          <a href="/dbt-docs/index.html" target="_blank" rel="noopener noreferrer">
+            dbt Documentation
+          </a>
         </p>
 
         <h2>Introduction</h2>
