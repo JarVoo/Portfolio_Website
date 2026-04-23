@@ -31,7 +31,7 @@ export default function WebAnalyticsSqlPythonPage() {
         <h1>Web Analytics Project Using SQL &amp; Python</h1>
 
         <p>
-          <a href="https://github.com/JarVoo/Web-Analytics-Project" target="_blank" rel="noopener noreferrer">
+          <a href="https://github.com/JarVoo/Web-Analytics-Project/blob/main/Web%20Analytics%20Project.ipynb" target="_blank" rel="noopener noreferrer">
             GitHub Repository
           </a>
         </p>
