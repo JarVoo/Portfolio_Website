@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retail Inventory Intelligence - Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0d0d0d;
+  --paper: #f5f2eb;
+  --paper2: #ede9df;
+  --rule: #d4cfc3;
+  --accent: #c0392b;
+  --accent2: #1a3a4a;
+  --accent3: #d4a017;
+  --text: #1c1c1c;
+  --muted: #7a7468;
+  --mono: 'IBM Plex Mono', monospace;
+  --serif: 'Playfair Display', serif;
+  --sans: 'Outfit', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--paper);
+  color: var(--text);
+  overflow-x: hidden;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ── NOISE TEXTURE OVERLAY ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* ══════════════════════════════════════════
+   HERO
+══════════════════════════════════════════ */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-left {
+  background: var(--accent2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 60px;
+  position: relative;
+  animation: revealLeft 0.9s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.hero-left::after {
+  content: '';
+  position: absolute;
+  right: -1px; top: 0; bottom: 0;
+  width: 60px;
+  background: var(--paper);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+/* Geometric accent lines on hero-left */
+.hero-left::before {
+  content: '';
+  position: absolute;
+  top: 40px; right: 100px;
+  width: 180px; height: 180px;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 50%;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent3);
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.3s ease both;
+}
+
+.hero-title {
+  font-family: var(--serif);
+  font-size: clamp(38px, 5vw, 62px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #f5f2eb;
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.45s ease both;
+}
+
+.hero-title em {
+  font-style: italic;
+  color: var(--accent3);
+}
+
+.hero-sub {
+  font-size: 14px;
+  color: rgba(245,242,235,0.6);
+  line-height: 1.7;
+  max-width: 380px;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.6s ease both;
+}
+
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 60px 80px 80px;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.5s ease both;
+}
+
+.hero-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-bottom: 40px;
+}
+
+.hero-stat {
+  background: var(--paper2);
+  border: 1px solid var(--rule);
+  padding: 24px;
+}
+
+.hero-stat-val {
+  font-family: var(--serif);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 6px;
+  color: var(--accent2);
+}
+
+.hero-stat-val.red { color: var(--accent); }
+.hero-stat-val.gold { color: var(--accent3); }
+
+.hero-stat-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hero-stack {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stack-chip {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border: 1px solid var(--accent2);
+  color: var(--accent2);
+  border-radius: 2px;
+}
+
+/* ══════════════════════════════════════════
+   SECTION WRAPPER
+══════════════════════════════════════════ */
+section {
+  padding: 90px 0;
+  position: relative;
+}
+
+section:nth-child(even) { background: var(--paper2); }
+
+.inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+.section-title {
+  font-family: var(--serif);
+  font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 48px;
+  color: var(--ink);
+}
+
+/* ══════════════════════════════════════════
+   PROBLEM STATEMENT
+══════════════════════════════════════════ */
+.problem-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+}
+
+.problem-col {
+  padding: 36px;
+  position: relative;
+}
+
+.problem-col.stockout {
+  background: #1a3a4a;
+  color: #f5f2eb;
+}
+
+.problem-col.overstock {
+  background: var(--accent);
+  color: #f5f2eb;
+}
+
+.problem-col-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 20px;
+}
+
+.problem-col h3 {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+.problem-item {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 16px;
+  align-items: flex-start;
+  font-size: 13px;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.problem-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.5;
+  min-width: 20px;
+  padding-top: 2px;
+}
+
+.problem-root {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 32px 36px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 3px;
+}
+
+.problem-root-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.problem-root p {
+  font-size: 14px;
+  line-height: 1.7;
+  opacity: 0.85;
+}
+
+.problem-root strong { color: var(--accent3); }
+
+/* ══════════════════════════════════════════
+   ARCHITECTURE
+══════════════════════════════════════════ */
+.arch-flow {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 40px;
+  border: 1px solid var(--rule);
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.arch-layer {
+  flex: 1;
+  padding: 28px 24px;
+  position: relative;
+  border-right: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+}
+
+.arch-layer:last-child { border-right: none; }
+
+.arch-arrow {
+  position: absolute;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  background: var(--accent2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  z-index: 2;
+  font-family: var(--mono);
+}
+
+.arch-layer-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-bottom: 14px;
+  width: fit-content;
+}
+
+.tag-s3    { background: rgba(212,160,23,0.15); color: var(--accent3); }
+.tag-raw   { background: rgba(192,57,43,0.12);  color: var(--accent);  }
+.tag-core  { background: rgba(26,58,74,0.12);   color: var(--accent2); }
+.tag-mart  { background: rgba(26,58,74,0.2);    color: var(--accent2); }
+.tag-bi    { background: rgba(0,0,0,0.08);      color: var(--ink);     }
+
+.arch-layer h4 {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.arch-layer p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  flex: 1;
+}
+
+.arch-tool {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.tech-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tech-table th {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper2);
+}
+
+.tech-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+.tech-table tr:last-child td { border-bottom: none; }
+.tech-table td:first-child { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--accent2); }
+
+/* ══════════════════════════════════════════
+   FINDINGS
+══════════════════════════════════════════ */
+.findings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+}
+
+.finding-card {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.finding-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+  z-index: 1;
+}
+
+.finding-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent2);
+}
+
+.finding-card.highlight::before { background: var(--accent); }
+.finding-card.gold::before { background: var(--accent3); }
+
+.finding-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.finding-card h4 {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 12px;
+  color: var(--ink);
+}
+
+.finding-card p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.finding-stat {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 14px 0 6px;
+  line-height: 1;
+}
+
+.finding-stat.navy { color: var(--accent2); }
+.finding-stat.gold { color: var(--accent3); }
+
+/* Wide finding card */
+.finding-card.wide {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: start;
+}
+
+.finding-pair {
+  display: flex;
+  gap: 3px;
+  flex-direction: column;
+}
+
+.finding-metric {
+  background: var(--paper2);
+  border: 1px solid var(--rule);
+  padding: 18px 20px;
+}
+
+.finding-metric-val {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.red  { color: var(--accent); }
+.navy { color: var(--accent2); }
+.gold { color: var(--accent3); }
+
+.finding-metric-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ══════════════════════════════════════════
+   RECOMMENDATIONS
+══════════════════════════════════════════ */
+.rec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rec-item {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  align-items: center;
+  gap: 0;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.rec-item:hover { transform: translateX(4px); }
+
+.rec-num {
+  background: var(--accent2);
+  color: var(--paper);
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  min-height: 80px;
+}
+
+.rec-num.red   { background: var(--accent); }
+.rec-num.gold  { background: var(--accent3); color: var(--ink); }
+
+.rec-body {
+  padding: 20px 24px;
+}
+
+.rec-title {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.rec-text {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.rec-priority {
+  padding: 0 24px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.priority-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.p-high  { background: var(--accent); }
+.p-med   { background: var(--accent3); }
+.p-low   { background: var(--accent2); }
+
+/* ══════════════════════════════════════════
+   AI NOTE
+══════════════════════════════════════════ */
+.ai-note {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 28px 36px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-top: 3px;
+}
+
+.ai-note-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ai-note-text {
+  font-size: 13px;
+  line-height: 1.7;
+  opacity: 0.8;
+}
+
+.ai-note-text strong { color: var(--accent3); opacity: 1; }
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+.footer {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 40px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-left {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.footer-left span { color: var(--accent3); }
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-link {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(245,242,235,0.5);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-link:hover { color: var(--accent3); }
+
+/* ══════════════════════════════════════════
+   SCROLL ANIMATIONS
+══════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+.reveal-delay-6 { transition-delay: 0.6s; }
+
+/* ══════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════ */
+@keyframes revealLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; min-height: auto; }
+  .hero-left::after { display: none; }
+  .hero-left, .hero-right { padding: 60px 32px; }
+  .problem-grid { grid-template-columns: 1fr; }
+  .arch-flow { flex-direction: column; }
+  .arch-arrow { display: none; }
+  .findings-grid { grid-template-columns: 1fr; }
+  .finding-card.wide { grid-column: span 1; grid-template-columns: 1fr; }
+  .rec-item { grid-template-columns: 48px 1fr; }
+  .rec-priority { display: none; }
+  .inner { padding: 0 24px; }
+  .footer { flex-direction: column; text-align: center; }
+  .hero-stat-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">// Portfolio Project · End-to-End Analytics Pipeline</div>
+    <h1 class="hero-title">Retail<br><em>Inventory</em><br>Intelligence</h1>
+    <p class="hero-sub">A full production analytics pipeline to diagnose where inventory systems fail, quantify the financial consequence, and surface data-driven reorder recommendations.</p>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-stat-grid">
+      <div class="hero-stat">
+        <div class="hero-stat-val">73K</div>
+        <div class="hero-stat-label">Rows of Data</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">39</div>
+        <div class="hero-stat-label">dbt Tests Passing</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val red">$2.77M</div>
+        <div class="hero-stat-label">Revenue Lost to Stockouts</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val gold">$20.7M</div>
+        <div class="hero-stat-label">Cash Tied Up in Overstock</div>
+      </div>
+    </div>
+
+    <div class="hero-stack">
+      <span class="stack-chip">Amazon S3</span>
+      <span class="stack-chip">Snowflake</span>
+      <span class="stack-chip">dbt Core</span>
+      <span class="stack-chip">Power BI</span>
+      <span class="stack-chip">GitHub</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     OBJECTIVES
+══════════════════════════════════════════ -->
+<section>
+  <div class="inner">
+    <div class="section-label">01 - Objectives</div>
+    <h2 class="section-title">What this project<br>set out to answer</h2>
+
+    <div class="findings-grid reveal">
+      <div class="finding-card reveal reveal-delay-1">
+        <div class="finding-num">// Objective 01</div>
+        <h4>Diagnose Inventory System Failures</h4>
+        <p>Identify which products are experiencing stockouts and overstock - not as a prediction exercise, but as a diagnosis of where the system is failing today.</p>
+      </div>
+      <div class="finding-card highlight reveal reveal-delay-2">
+        <div class="finding-num">// Objective 02</div>
+        <h4>Quantify the Financial Consequence</h4>
+        <p>Translate inventory failures into business terms: how much revenue is lost to empty shelves, how much cash is locked in excess stock, and where the exposure is highest.</p>
+      </div>
+      <div class="finding-card gold reveal reveal-delay-3">
+        <div class="finding-num">// Objective 03</div>
+        <h4>Surface Actionable Reorder Recommendations</h4>
+        <p>Produce immediately actionable reorder point corrections using actual sales data - without requiring a single machine learning model.</p>
+      </div>
+      <div class="finding-card reveal reveal-delay-4">
+        <div class="finding-num">// Objective 04</div>
+        <h4>Build Production-Grade Infrastructure</h4>
+        <p>Go beyond a notebook. Implement a fully layered warehouse with RAW, CORE, and MART separation, automated testing, and documented models.</p>
+      </div>
+      <div class="finding-card reveal reveal-delay-5">
+        <div class="finding-num">// Objective 05</div>
+        <h4>Validate Forecast Accuracy</h4>
+        <p>Assess whether the existing demand forecast is calibrated correctly, and identify directional bias that compounds inventory errors over time.</p>
+      </div>
+      <div class="finding-card reveal reveal-delay-6">
+        <div class="finding-num">// Objective 06</div>
+        <h4>Rank Stores by Operational Performance</h4>
+        <p>Score stores across five metrics and produce a ranked leaderboard to guide where targeted intervention would have the highest impact.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     PROBLEM STATEMENT
+══════════════════════════════════════════ -->
+<section>
+  <div class="inner">
+    <div class="section-label">02 - Problem Statement</div>
+    <h2 class="section-title">Two costly errors.<br>One shared root cause.</h2>
+  </div>
+
+  <div class="problem-grid reveal">
+    <div class="problem-col stockout">
+      <div class="problem-col-label">// Too Little Stock</div>
+      <h3>Stockout</h3>
+      <div class="problem-item"><span class="problem-num">01</span><span>Lost sales when the shelf is empty and the customer shops elsewhere.</span></div>
+      <div class="problem-item"><span class="problem-num">02</span><span>Repeat customers switch to a competitor when they can't get their order.</span></div>
+      <div class="problem-item"><span class="problem-num">03</span><span>Emergency replenishment at inflated cost and expedited shipping premiums.</span></div>
+    </div>
+    <div class="problem-col overstock">
+      <div class="problem-col-label">// Too Much Stock</div>
+      <h3>Overstock</h3>
+      <div class="problem-item"><span class="problem-num">01</span><span>Cash tied up in products sitting unsold on shelves.</span></div>
+      <div class="problem-item"><span class="problem-num">02</span><span>Markdowns and discounts required to clear excess inventory.</span></div>
+      <div class="problem-item"><span class="problem-num">03</span><span>Perishable or seasonal goods written off entirely.</span></div>
+      <div class="problem-item"><span class="problem-num">04</span><span>Storage costs accumulate on slow-moving lines.</span></div>
+    </div>
+  </div>
+  <div class="problem-root reveal">
+    <div class="problem-root-icon">⚡</div>
+    <p>Both errors share the same root cause: <strong>reorder points and demand forecasts that don't reflect actual sales patterns.</strong> Order too late and you run out. Over-correct and you carry too much. The fix is not more stock - it's better configuration.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     ARCHITECTURE
+══════════════════════════════════════════ -->
+<section>
+  <div class="inner">
+    <div class="section-label">03 - Architecture</div>
+    <h2 class="section-title">End-to-end pipeline<br>across four layers</h2>
+
+    <div class="arch-flow reveal">
+      <div class="arch-layer">
+        <span class="arch-layer-tag tag-s3">Source</span>
+        <h4>Amazon S3</h4>
+        <p>Raw CSV files land here as the ingestion zone. No transformation applied at this stage - source of truth for all downstream layers.</p>
+        <div class="arch-tool">Cloud Storage</div>
+        <div class="arch-arrow">→</div>
+      </div>
+      <div class="arch-layer">
+        <span class="arch-layer-tag tag-raw">RAW</span>
+        <h4>Snowflake RAW</h4>
+        <p>Loaded directly via COPY INTO. Four source tables: dim_product_master, fct_daily_sales, fct_inventory_snapshot, fct_purchase_orders.</p>
+        <div class="arch-tool">Data Warehouse</div>
+        <div class="arch-arrow">→</div>
+      </div>
+      <div class="arch-layer">
+        <span class="arch-layer-tag tag-core">CORE</span>
+        <h4>dbt CORE Views</h4>
+        <p>One view per source table. Casts data types, adds boolean flags, derives base fields. Built as views - always reflects latest RAW data.</p>
+        <div class="arch-tool">dbt Core · Views</div>
+        <div class="arch-arrow">→</div>
+      </div>
+      <div class="arch-layer">
+        <span class="arch-layer-tag tag-mart">MART</span>
+        <h4>dbt MART Tables</h4>
+        <p>Seven aggregated tables answering specific business questions. Materialised as tables for query performance. 39 automated tests.</p>
+        <div class="arch-tool">dbt Core · Tables</div>
+        <div class="arch-arrow">→</div>
+      </div>
+      <div class="arch-layer">
+        <span class="arch-layer-tag tag-bi">VISUALISE</span>
+        <h4>Power BI Dashboard</h4>
+        <p>Single operational dashboard surfacing stockout rates, overstock patterns, inventory turnover, and reorder gaps.</p>
+        <div class="arch-tool">Power BI</div>
+      </div>
+    </div>
+
+    <table class="tech-table reveal">
+      <thead>
+        <tr>
+          <th>Tool</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Amazon S3</td><td>Cloud storage - raw CSV file landing zone</td></tr>
+        <tr><td>Snowflake</td><td>Cloud data warehouse - RAW, CORE, and MART layers</td></tr>
+        <tr><td>dbt Core</td><td>Transformation, testing, documentation, and lineage</td></tr>
+        <tr><td>Power BI</td><td>Dashboard and visualisation layer</td></tr>
+        <tr><td>Git & GitHub</td><td>Version control and portfolio publishing</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     KEY FINDINGS
+══════════════════════════════════════════ -->
+<section>
+  <div class="inner">
+    <div class="section-label">04 - Key Findings</div>
+    <h2 class="section-title">What the data<br>actually showed</h2>
+
+    <div class="findings-grid">
+
+      <div class="finding-card wide reveal">
+        <div>
+          <div class="finding-num">// Finding 01 · Critical</div>
+          <h4>Reorder Points Are Critically Underset Across Every Product</h4>
+          <p>Every product in the catalogue has a reorder point set far below what actual sales data requires. The worst case - Casual T-Shirt - is configured to trigger at 113 units when the data-driven correct threshold is 1,943 units. A gap of 1,830 units. By the time a reorder fires, there is not enough stock to last through the supplier's delivery window. Stockouts are structurally inevitable under the current configuration.</p>
+          <div class="finding-stat red">1,830 units</div>
+          <p style="font-size:11px; color:var(--muted);">worst-case reorder gap - Casual T-Shirt</p>
+        </div>
+        <div class="finding-pair">
+          <div class="finding-metric">
+            <div class="finding-metric-val red">$2.77M</div>
+            <div class="finding-metric-label">Revenue Lost to Stockouts</div>
+          </div>
+          <div class="finding-metric">
+            <div class="finding-metric-val navy">100%</div>
+            <div class="finding-metric-label">Products with Positive Reorder Gap</div>
+          </div>
+          <div class="finding-metric">
+            <div class="finding-metric-val gold">$20.7M</div>
+            <div class="finding-metric-label">Cash Tied Up in Overstock</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="finding-card reveal reveal-delay-1">
+        <div class="finding-num">// Finding 02</div>
+        <h4>Demand Forecasts Systematically Overestimate Sales</h4>
+        <p>Across all 20 products, forecasts consistently overestimate actual sales by ~3.5%. A one-directional bias across the entire catalogue signals the forecast model needs recalibration - it compounds the overstock problem over time.</p>
+        <div class="finding-stat navy">3.5%</div>
+        <p style="font-size:11px; color:var(--muted);">consistent upward forecast bias - all 20 products</p>
+      </div>
+
+      <div class="finding-card highlight reveal reveal-delay-2">
+        <div class="finding-num">// Finding 03 · Counterintuitive</div>
+        <h4>Products Are Simultaneously Overstocked and Stockingout</h4>
+        <p>Canned Tomatoes is overstocked on 50% of trading days yet still experiences stockouts. Stock arrives in large batches, sells down, runs out before the next order, and the cycle repeats. The problem is timing, not volume.</p>
+        <div class="finding-stat">50%</div>
+        <p style="font-size:11px; color:var(--muted);">overstock rate on a product that also stocksout</p>
+      </div>
+
+      <div class="finding-card gold reveal reveal-delay-3">
+        <div class="finding-num">// Finding 04</div>
+        <h4>Inventory Turnover Is Below Benchmark Across the Catalogue</h4>
+        <p>Healthy retail targets 4–12x turnover per year. This dataset ranges 0.72–1.25x. Action Figure Set and Classic LEGO Set at 0.72 tie up the most cash relative to velocity.</p>
+        <div class="finding-stat gold">0.72×</div>
+        <p style="font-size:11px; color:var(--muted);">lowest turnover vs. 4–12× retail benchmark</p>
+      </div>
+
+      <div class="finding-card reveal reveal-delay-4">
+        <div class="finding-num">// Finding 05</div>
+        <h4>High-Margin Products Sit in the Low Velocity Quadrant</h4>
+        <p>The 2×2 margin-velocity quadrant reveals "sleeping giants" - high-margin products with strong profit potential that promotional intervention could unlock without adding inventory risk.</p>
+        <div class="finding-stat navy">2×2</div>
+        <p style="font-size:11px; color:var(--muted);">margin × velocity quadrant - strategic opportunity identified</p>
+      </div>
+
+      <div class="finding-card reveal reveal-delay-5">
+        <div class="finding-num">// Finding 06</div>
+        <h4>Store S002 Leads - S005 Ranks Last Across All Five Metrics</h4>
+        <p>Stores ranked across stockout rate, overstock rate, revenue lost, cash tied up, and inventory turnover. S002 is the benchmark. S005 and S004 carry the highest financial exposure and should be prioritised for intervention.</p>
+        <div class="finding-stat red">S005</div>
+        <p style="font-size:11px; color:var(--muted);">worst performing store - highest financial exposure</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     RECOMMENDATIONS
+══════════════════════════════════════════ -->
+<section>
+  <div class="inner">
+    <div class="section-label">05 - Recommendations</div>
+    <h2 class="section-title">What to do about it</h2>
+
+    <div class="rec-list">
+
+      <div class="rec-item reveal">
+        <div class="rec-num red">1</div>
+        <div class="rec-body">
+          <div class="rec-title">Recalculate Reorder Points Immediately</div>
+          <div class="rec-text">Every product's reorder point should be recalculated using avg daily sales × supplier lead time. Casual T-Shirt, Organic Oats, and USB-C Hub carry the largest gaps. Until this is corrected, stockouts are structurally unavoidable regardless of order volume.</div>
+        </div>
+        <div class="rec-priority"><span class="priority-dot p-high"></span>High Priority</div>
+      </div>
+
+      <div class="rec-item reveal reveal-delay-1">
+        <div class="rec-num red">2</div>
+        <div class="rec-body">
+          <div class="rec-title">Recalibrate the Demand Forecast Model</div>
+          <div class="rec-text">A consistent 3.5% overestimate across every product is a systematic bias, not random error. Adjusting the model's inputs to reduce this directional skew will improve order accuracy and reduce the $20.7M currently tied up in excess stock.</div>
+        </div>
+        <div class="rec-priority"><span class="priority-dot p-high"></span>High Priority</div>
+      </div>
+
+      <div class="rec-item reveal reveal-delay-2">
+        <div class="rec-num gold">3</div>
+        <div class="rec-body">
+          <div class="rec-title">Shift High Overstock/Stockout Products to Smaller, Frequent Orders</div>
+          <div class="rec-text">For Canned Tomatoes, Smart Home Speaker, and Dining Table Oak, the solution is not ordering more but ordering more frequently in smaller batches. The replenishment cycle is the problem - smoother deliveries eliminate the boom-and-bust pattern driving both metrics wrong simultaneously.</div>
+        </div>
+        <div class="rec-priority"><span class="priority-dot p-med"></span>Medium Priority</div>
+      </div>
+
+      <div class="rec-item reveal reveal-delay-3">
+        <div class="rec-num">4</div>
+        <div class="rec-body">
+          <div class="rec-title">Activate Sleeping Giants with Targeted Promotions</div>
+          <div class="rec-text">Classic LEGO Set and Building Blocks 100pc are high-margin products sitting in the Low Velocity quadrant. Targeted promotional intervention - discounting or bundling - could unlock strong profit without adding inventory risk.</div>
+        </div>
+        <div class="rec-priority"><span class="priority-dot p-low"></span>Strategic</div>
+      </div>
+
+      <div class="rec-item reveal reveal-delay-4">
+        <div class="rec-num">5</div>
+        <div class="rec-body">
+          <div class="rec-title">Prioritise Intervention at S005 and S004</div>
+          <div class="rec-text">Rather than applying catalogue-wide fixes uniformly, operational effort should be concentrated at the lowest-performing stores where financial exposure is highest. Use S002 operating patterns as the internal benchmark.</div>
+        </div>
+        <div class="rec-priority"><span class="priority-dot p-med"></span>Medium Priority</div>
+      </div>
+
+      <div class="rec-item reveal reveal-delay-5">
+        <div class="rec-num gold">6</div>
+        <div class="rec-body">
+          <div class="rec-title">Review Eight Products With Turnover Below 0.85×</div>
+          <div class="rec-text">Action Figure Set and Classic LEGO Set tie up the most cash relative to sales velocity. Discounting or bundling strategies would accelerate sell-through and improve overall capital efficiency across the catalogue.</div>
+        </div>
+        <div class="rec-priority"><span class="priority-dot p-low"></span>Strategic</div>
+      </div>
+
+    </div>
+
+    <div class="ai-note reveal" style="margin-top:3px;">
+      <div class="ai-note-icon">🤖</div>
+      <div class="ai-note-text">
+        <strong>On AI-assisted development:</strong> Claude was used as a thinking partner throughout this build - reviewing SQL logic, reasoning through mart design, and challenging analytical assumptions. It did not write this project. It functioned as a senior colleague available throughout the build. This reflects how AI tools operate in modern data teams: not as code generators, but as accelerators of learning and output quality.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-left">Retail Inventory <span>Intelligence</span></div>
+  <div class="footer-links">
+    <a class="footer-link" href="https://github.com/JarVoo/inventory_analysis_project" target="_blank" rel="noopener noreferrer">GitHub Repository →</a>
+    <a class="footer-link" href="/dbt-docs/index.html" target="_blank" rel="noopener noreferrer">dbt Documentation →</a>
+  </div>
+</footer>
+
+<script>
+// Intersection Observer for scroll reveals
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(el => {
+    if (el.isIntersecting) {
+      el.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

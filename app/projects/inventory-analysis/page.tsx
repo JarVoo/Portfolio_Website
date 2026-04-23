@@ -38,6 +38,45 @@ export default function InventoryAnalysisPage() {
           </a>
         </p>
 
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "2rem 0" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/projects/inventory-analysis/one-pager-preview.png"
+            alt="One-Pager Summary Preview"
+            style={{
+              width: "100%",
+              maxWidth: "700px",
+              borderRadius: "10px",
+              marginBottom: "1.25rem",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.45)",
+            }}
+          />
+          <a
+            href="/projects/inventory-analysis/retail-inventory-one-pager.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-block",
+              padding: "0.75rem 2rem",
+              background: "rgba(40,40,40,0.55)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: "8px",
+              color: "#f0f0f0",
+              fontFamily: "inherit",
+              fontSize: "0.95rem",
+              fontWeight: 500,
+              letterSpacing: "0.03em",
+              textDecoration: "none",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)",
+              transition: "background 0.2s, box-shadow 0.2s",
+            }}
+          >
+            One-Pager Summary
+          </a>
+        </div>
+
         <h2>Introduction</h2>
         <p>
           Retailers face two costly inventory problems simultaneously, stock that sits unsold tying up cash, and stock that runs out before replenishment arrives losing sales. This project builds a full analytical pipeline to identify which products are affected, quantify the impact, and surface data-driven reorder recommendations. All of this is created in an end-to-end workflow, data is ingested via S3, and stored in Snowflake. The data is transformed in dbt, documentation recorded, and testing procedures put in place to export to Power BI where stockout rates, overstock patterns, inventory turnover, and reorder gaps are visualised in a single operational dashboard.
