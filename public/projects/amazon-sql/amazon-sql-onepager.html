@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon USA Sales Analysis - Jarred Voorneveld</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:      #0a0a0a;
+    --dark:       #111111;
+    --dark-mid:   #1a1a1a;
+    --dark-card:  #141414;
+    --teal:       #3dd6c8;
+    --teal-dim:   rgba(61,214,200,0.12);
+    --teal-rule:  rgba(61,214,200,0.28);
+    --white:      #ffffff;
+    --grey-light: #c8c8c8;
+    --grey-mid:   #888888;
+    --grey-dark:  #444444;
+    --rule:       rgba(255,255,255,0.07);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--grey-light);
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page-wrapper {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 48px;
+  }
+
+  /* ── UTILITIES ── */
+  .teal-rule-short {
+    width: 40px;
+    height: 2px;
+    background: var(--teal);
+    margin-bottom: 18px;
+  }
+
+  .mono-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    display: block;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 52px 0 44px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 40px;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .wordmark {
+    margin-bottom: 28px;
+  }
+
+  .wordmark-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .wordmark-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-top: 5px;
+  }
+
+  .header-headline {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: clamp(34px, 5vw, 58px);
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+
+  .header-headline span { color: var(--teal); }
+
+  .header-sub {
+    margin-top: 18px;
+    font-size: 15px;
+    color: var(--grey-mid);
+    max-width: 580px;
+    line-height: 1.8;
+  }
+
+  .header-right {
+    text-align: right;
+    padding-top: 4px;
+  }
+
+  .header-right .mono-label { margin-bottom: 10px; }
+
+  .header-right p {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--grey-mid);
+    line-height: 2;
+  }
+
+  .doc-badge {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 7px 16px;
+    border: 1px solid var(--teal-rule);
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--teal);
+  }
+
+  /* ── HERO BAND ── */
+  .hero-band {
+    position: relative;
+    width: calc(100% + 96px);
+    margin-left: -48px;
+    height: 280px;
+    overflow: hidden;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+
+  .hero-band img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.28) saturate(0.4);
+    display: block;
+  }
+
+  .hero-band .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right,
+      rgba(10,10,10,0.95) 0%,
+      rgba(10,10,10,0.4) 50%,
+      rgba(10,10,10,0.75) 100%
+    );
+  }
+
+  .hero-stats {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    border-top: 1px solid var(--teal-rule);
+  }
+
+  .h-stat {
+    flex: 1;
+    text-align: center;
+    padding: 18px 14px;
+    border-right: 1px solid var(--teal-rule);
+  }
+
+  .h-stat:last-child { border-right: none; }
+
+  .h-stat .snum {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--teal);
+    line-height: 1;
+  }
+
+  .h-stat .slabel {
+    font-family: 'DM Mono', monospace;
+    font-size: 8.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--grey-mid);
+    margin-top: 5px;
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 56px 0;
+    border-top: 1px solid var(--rule);
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .sec-header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 30px;
+  }
+
+  .sec-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--teal);
+    text-transform: uppercase;
+  }
+
+  .sec-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  /* ── TWO-COL BODY ── */
+  .two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .col-left {
+    padding-right: 44px;
+    border-right: 1px solid var(--rule);
+  }
+
+  .col-right {
+    padding-left: 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 22px;
+  }
+
+  .col-left p, .body-text {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--grey-light);
+    margin-bottom: 14px;
+  }
+
+  .col-left p:last-child { margin-bottom: 0; }
+
+  .pull-quote {
+    border-left: 2px solid var(--teal);
+    padding-left: 20px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 19px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--white);
+    line-height: 1.5;
+  }
+
+  .col-right-body {
+    font-size: 14px;
+    color: var(--grey-mid);
+    line-height: 1.8;
+  }
+
+  /* ── TECH STACK PILLS ── */
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 0;
+  }
+
+  .pill {
+    padding: 8px 18px;
+    border: 1px solid var(--teal-rule);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--grey-light);
+    background: var(--dark-mid);
+    transition: all 0.2s ease;
+  }
+
+  .pill:hover {
+    background: var(--teal-dim);
+    color: var(--teal);
+    border-color: var(--teal);
+  }
+
+  /* ── ERD SCHEMA IMAGE ── */
+  .schema-img {
+    width: 100%;
+    border: 1px solid var(--teal-rule);
+    display: block;
+    filter: brightness(0.9);
+  }
+
+  .img-caption {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--grey-mid);
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  /* ── TWO-COL CARDS ── */
+  .two-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .t-card {
+    padding: 22px 20px;
+    border: 1px solid var(--rule);
+    background: var(--dark-card);
+    transition: background 0.2s ease;
+  }
+
+  .t-card:hover { background: var(--dark-mid); }
+
+  .t-card::before {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 2px;
+    background: var(--teal);
+    margin-bottom: 14px;
+  }
+
+  .t-card h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .t-card p {
+    font-size: 13px;
+    color: var(--grey-mid);
+    line-height: 1.65;
+  }
+
+  /* ── NUMBERED PROBLEMS LIST ── */
+  .problems-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--rule);
+  }
+
+  .prob-item {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--rule);
+    border-right: 1px solid var(--rule);
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: background 0.2s ease;
+  }
+
+  .prob-item:nth-child(even) { border-right: none; }
+  .prob-item:nth-last-child(-n+2) { border-bottom: none; }
+  .prob-item:hover { background: var(--dark-mid); }
+
+  .prob-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--teal);
+    padding-top: 3px;
+    min-width: 22px;
+    opacity: 0.75;
+  }
+
+  .prob-text {
+    font-size: 13.5px;
+    color: var(--grey-light);
+    line-height: 1.65;
+  }
+
+  /* ── ANALYSIS GRID - 18 questions ── */
+  .analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+
+  .an-card {
+    background: var(--dark);
+    padding: 22px 20px;
+    transition: background 0.2s ease;
+  }
+
+  .an-card:hover { background: var(--dark-mid); }
+
+  .an-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--teal);
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+    opacity: 0.8;
+  }
+
+  .an-card h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 7px;
+    line-height: 1.2;
+  }
+
+  .an-card p {
+    font-size: 12.5px;
+    color: var(--grey-mid);
+    line-height: 1.6;
+  }
+
+  /* ── THREE-COL CARDS ── */
+  .three-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .th-card {
+    padding: 22px 20px;
+    border: 1px solid var(--rule);
+    background: var(--dark-card);
+    border-top: 2px solid var(--teal);
+    transition: background 0.2s ease;
+  }
+
+  .th-card:hover { background: var(--dark-mid); }
+
+  .th-card h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .th-card p {
+    font-size: 13px;
+    color: var(--grey-mid);
+    line-height: 1.65;
+  }
+
+  /* ── HIGHLIGHT BOX ── */
+  .highlight {
+    background: var(--teal-dim);
+    border-left: 2px solid var(--teal);
+    padding: 16px 20px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--white);
+    line-height: 1.5;
+    margin-top: 18px;
+  }
+
+  /* ── OUTCOMES LIST ── */
+  .outcomes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--rule);
+  }
+
+  .out-item {
+    padding: 15px 22px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: background 0.2s ease;
+  }
+
+  .out-item:last-child { border-bottom: none; }
+  .out-item:hover { background: var(--dark-mid); }
+
+  .out-icon {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--teal);
+    padding-top: 3px;
+    min-width: 20px;
+    opacity: 0.8;
+  }
+
+  .out-text {
+    font-size: 14px;
+    color: var(--grey-light);
+    line-height: 1.65;
+  }
+
+  /* ── CTA ── */
+  .cta-section {
+    padding: 60px 0 68px;
+    border-top: 1px solid var(--rule);
+    text-align: center;
+  }
+
+  .cta-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 4.5vw, 46px);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 18px;
+  }
+
+  .cta-title span { color: var(--teal); }
+
+  .cta-body {
+    max-width: 620px;
+    margin: 0 auto 34px;
+    font-size: 15px;
+    color: var(--grey-mid);
+    line-height: 1.85;
+  }
+
+  .cta-tags {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .cta-tag {
+    padding: 11px 24px;
+    border: 1px solid var(--teal-rule);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-block;
+  }
+
+  .cta-tag:hover {
+    background: var(--teal-dim);
+    border-color: var(--teal);
+  }
+
+  .cta-tag.primary {
+    background: var(--teal);
+    color: var(--black);
+    border-color: var(--teal);
+    font-weight: 800;
+  }
+
+  .cta-tag.primary:hover {
+    background: #5ee8db;
+    border-color: #5ee8db;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 26px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  footer p {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--grey-dark);
+    letter-spacing: 0.1em;
+  }
+
+  .footer-wordmark { text-align: center; }
+
+  .fw-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .fw-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-top: 3px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  section:nth-of-type(1)  { animation-delay: 0.05s; }
+  section:nth-of-type(2)  { animation-delay: 0.10s; }
+  section:nth-of-type(3)  { animation-delay: 0.14s; }
+  section:nth-of-type(4)  { animation-delay: 0.18s; }
+  section:nth-of-type(5)  { animation-delay: 0.21s; }
+  section:nth-of-type(6)  { animation-delay: 0.24s; }
+  section:nth-of-type(7)  { animation-delay: 0.27s; }
+  section:nth-of-type(8)  { animation-delay: 0.30s; }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ══ HEADER ══ -->
+  <header>
+    <div>
+      <div class="wordmark">
+        <div class="wordmark-title">Jarred Voorneveld</div>
+        <div class="wordmark-sub">Portfolio - Data Analysis</div>
+      </div>
+      <h1 class="header-headline">
+        Amazon USA<br>
+        Sales Analysis<br>
+        <span>Project Using SQL</span>
+      </h1>
+      <p class="header-sub">
+        An advanced SQL analysis of over 20,000 sales records from an Amazon-like 
+        e-commerce platform - covering customer behaviour, product performance, 
+        revenue trends, and operational logistics using PostgreSQL.
+      </p>
+    </div>
+    <div class="header-right">
+      <span class="mono-label">Document Type</span>
+      <p>
+        Portfolio Project<br>
+        Advanced Difficulty<br>
+        PostgreSQL
+      </p>
+      <span class="doc-badge">Sales Analysis · Oct 2024</span>
+    </div>
+  </header>
+
+  <!-- ══ HERO BAND ══ -->
+  <div class="hero-band">
+    <img src="https://jarredsportfolio.netlify.app/projects/amazon-sql/hero.jpg" alt="Amazon USA Sales Analysis">
+    <div class="overlay"></div>
+    <div class="hero-stats">
+      <div class="h-stat"><div class="snum">20,000+</div><div class="slabel">Sales Records</div></div>
+      <div class="h-stat"><div class="snum">8</div><div class="slabel">Relational Tables</div></div>
+      <div class="h-stat"><div class="snum">18</div><div class="slabel">Business Problems Solved</div></div>
+      <div class="h-stat"><div class="snum">Advanced</div><div class="slabel">Difficulty Level</div></div>
+    </div>
+  </div>
+
+  <!-- ══ 01 PROJECT OVERVIEW ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title">Project Overview</h2>
+    </div>
+    <div class="two-cols">
+      <div class="col-left">
+        <p>This project involved analysing a dataset of over 20,000 sales records from an Amazon-like e-commerce platform. The analysis involved extensive querying of customer behavior, product performance, and sales trends using PostgreSQL.</p>
+        <p>The project tackled a range of SQL challenges including revenue analysis, customer segmentation, and inventory management - all grounded in real business problems that an e-commerce operation would need to solve.</p>
+        <p>The project also focuses on data cleaning, handling null values, and solving real-world business problems using structured queries. An ERD diagram is included to visually represent the database schema and relationships between tables.</p>
+      </div>
+      <div class="col-right">
+        <div class="pull-quote">"An advanced SQL project solving 18 real-world e-commerce business problems across revenue, logistics, inventory, and customer behaviour."</div>
+        <div>
+          <p class="mono-label" style="margin-bottom: 12px;">Tech Stack</p>
+          <div class="pills">
+            <span class="pill">PostgreSQL</span>
+            <span class="pill">SQL</span>
+            <span class="pill">Window Functions</span>
+            <span class="pill">CTEs</span>
+            <span class="pill">Subqueries</span>
+            <span class="pill">Joins</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 02 DATABASE SETUP & DESIGN ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title">Database Setup &amp; Design</h2>
+    </div>
+
+    <div style="margin-bottom: 32px;">
+      <img
+        src="https://jarredsportfolio.netlify.app/projects/amazon-sql/database-schema.png"
+        alt="Amazon sales database schema - entity relationship diagram"
+        class="schema-img"
+      >
+      <p class="img-caption">Entity Relationship Diagram - Amazon Sales Database Schema</p>
+    </div>
+
+    <p class="mono-label" style="margin-bottom: 14px;">Schema Structure - 8 Relational Tables</p>
+    <div class="two-cards">
+      <div class="t-card">
+        <h4>Core Entities</h4>
+        <p>The schema includes <strong style="color:var(--white)">category</strong>, <strong style="color:var(--white)">customers</strong>, <strong style="color:var(--white)">sellers</strong>, and <strong style="color:var(--white)">products</strong> tables as the foundational entities - each with primary keys and appropriate data types.</p>
+      </div>
+      <div class="t-card">
+        <h4>Transactional Tables</h4>
+        <p>Transaction flow is captured across <strong style="color:var(--white)">orders</strong>, <strong style="color:var(--white)">order_items</strong>, <strong style="color:var(--white)">payments</strong>, <strong style="color:var(--white)">shippings</strong>, and <strong style="color:var(--white)">inventory</strong> - all linked via foreign key constraints.</p>
+      </div>
+      <div class="t-card">
+        <h4>Referential Integrity</h4>
+        <p>All foreign key relationships are enforced using <code style="color:var(--teal);font-family:'DM Mono',monospace;font-size:12px">CONSTRAINT</code> declarations, ensuring data consistency across the relational model.</p>
+      </div>
+      <div class="t-card">
+        <h4>Full Schema on GitHub</h4>
+        <p>The complete <code style="color:var(--teal);font-family:'DM Mono',monospace;font-size:12px">CREATE TABLE</code> statements, data types, and constraint definitions are available in the project repository.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 03 DATA CLEANING ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title">Data Cleaning</h2>
+    </div>
+    <div class="two-cols">
+      <div class="col-left">
+        <p class="mono-label" style="margin-bottom: 14px;">Cleaning Approach</p>
+        <p>The dataset was cleaned prior to analysis, covering two primary concerns: duplicate records and missing values. Each was handled according to the nature of the affected field and its analytical importance.</p>
+        <div class="two-cards" style="margin-top: 20px;">
+          <div class="t-card">
+            <h4>Removing Duplicates</h4>
+            <p>Duplicates in the customer and order tables were identified and removed to ensure accurate aggregation and reporting.</p>
+          </div>
+          <div class="t-card">
+            <h4>Handling Missing Values</h4>
+            <p>Null values in critical fields were either filled with default values or handled using appropriate methods based on context.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-right">
+        <p class="mono-label" style="margin-bottom: 14px;">Null Value Strategy</p>
+        <div class="outcomes-list">
+          <div class="out-item">
+            <span class="out-icon">→</span>
+            <span class="out-text"><strong style="color:var(--white)">Customer addresses:</strong> Missing addresses were assigned default placeholder values.</span>
+          </div>
+          <div class="out-item">
+            <span class="out-icon">→</span>
+            <span class="out-text"><strong style="color:var(--white)">Payment statuses:</strong> Orders with null payment statuses were categorised as "Pending."</span>
+          </div>
+          <div class="out-item">
+            <span class="out-icon">→</span>
+            <span class="out-text"><strong style="color:var(--white)">Shipping information:</strong> Null return dates were left as is, as not all shipments are returned.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 04 OBJECTIVE ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">04</span>
+      <h2 class="sec-title">Objective</h2>
+    </div>
+    <p style="font-size:15px;line-height:1.8;color:var(--grey-light);max-width:820px;margin-bottom:28px;">
+      The primary objective of this project is to showcase SQL proficiency through complex queries 
+      that address real-world e-commerce business challenges. The analysis covers various aspects 
+      of e-commerce operations, including:
+    </p>
+    <div class="three-cards">
+      <div class="th-card">
+        <h4>Customer Behaviour</h4>
+        <p>Segmenting customers by purchase history, identifying inactive buyers, and calculating lifetime value.</p>
+      </div>
+      <div class="th-card">
+        <h4>Sales Trends</h4>
+        <p>Monthly revenue tracking, category performance, and year-on-year product revenue comparison.</p>
+      </div>
+      <div class="th-card">
+        <h4>Inventory Management</h4>
+        <p>Identifying low-stock products, restocking dates, and warehouse-level visibility.</p>
+      </div>
+      <div class="th-card">
+        <h4>Payment Analysis</h4>
+        <p>Payment success rates, status breakdowns, and order-to-payment linkage.</p>
+      </div>
+      <div class="th-card">
+        <h4>Shipping Analysis</h4>
+        <p>Delivery delay identification, provider performance, and average delivery time calculations.</p>
+      </div>
+      <div class="th-card">
+        <h4>Product Performance</h4>
+        <p>Top sellers, profit margin ranking, return rates, and revenue decline analysis.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 05 BUSINESS PROBLEMS IDENTIFIED ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">05</span>
+      <h2 class="sec-title">Identifying Business Problems</h2>
+    </div>
+    <p style="font-size:15px;line-height:1.8;color:var(--grey-light);max-width:820px;margin-bottom:28px;">
+      Key business problems identified through initial data exploration:
+    </p>
+    <div class="problems-list">
+      <div class="prob-item"><span class="prob-num">01</span><span class="prob-text">Low product availability due to inconsistent restocking.</span></div>
+      <div class="prob-item"><span class="prob-num">02</span><span class="prob-text">High return rates for specific product categories.</span></div>
+      <div class="prob-item"><span class="prob-num">03</span><span class="prob-text">Significant delays in shipments and inconsistencies in delivery times.</span></div>
+      <div class="prob-item"><span class="prob-num">04</span><span class="prob-text">High customer acquisition costs with a low customer retention rate.</span></div>
+    </div>
+  </section>
+
+  <!-- ══ 06 SOLVING BUSINESS PROBLEMS ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">06</span>
+      <h2 class="sec-title">Solving Business Problems</h2>
+    </div>
+    <p style="font-size:15px;line-height:1.8;color:var(--grey-light);max-width:820px;margin-bottom:28px;">
+      18 structured SQL queries were written to address real operational questions across the business. 
+      Each query was designed around a specific challenge and includes a constraint that raises the 
+      analytical complexity. Full SQL scripts are available on GitHub.
+    </p>
+    <div class="analysis-grid">
+
+      <div class="an-card">
+        <div class="an-num">Q01</div>
+        <h4>Top Selling Products</h4>
+        <p>Top 10 products by total sales value - including product name, total quantity sold, and total sales value.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q02</div>
+        <h4>Revenue by Category</h4>
+        <p>Total revenue per product category with each category's percentage contribution to overall revenue.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q03</div>
+        <h4>Average Order Value</h4>
+        <p>AOV computed per customer - filtered to customers with more than 5 orders.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q04</div>
+        <h4>Monthly Sales Trend</h4>
+        <p>Monthly total sales over the past year using LAG() to display current and prior month side-by-side.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q05</div>
+        <h4>Customers with No Purchases</h4>
+        <p>Registered customers who never placed an order - solved via two approaches: NOT IN subquery and LEFT JOIN.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q06</div>
+        <h4>Least-Selling Categories by State</h4>
+        <p>The weakest-performing category in each US state - using RANK() partitioned by state.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q07</div>
+        <h4>Customer Lifetime Value</h4>
+        <p>Total order value per customer across their lifetime, ranked using DENSE_RANK().</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q08</div>
+        <h4>Inventory Stock Alerts</h4>
+        <p>Products with fewer than 10 units in stock - including last restock date and warehouse ID.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q09</div>
+        <h4>Shipping Delays</h4>
+        <p>Orders where shipping date exceeded 3 days after order date - with customer details and delivery provider.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q10</div>
+        <h4>Payment Success Rate</h4>
+        <p>Percentage of successful payments across all orders with a breakdown by payment status.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q11</div>
+        <h4>Top Performing Sellers</h4>
+        <p>Top 5 sellers by total sales value - showing both completed and cancelled orders with success rate percentage.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q12</div>
+        <h4>Product Profit Margin</h4>
+        <p>Profit margin per product (price minus COGS), ranked highest to lowest using DENSE_RANK().</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q13</div>
+        <h4>Most Returned Products</h4>
+        <p>Top 10 products by return count - with return rate as a percentage of total units sold.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q14</div>
+        <h4>Inactive Sellers</h4>
+        <p>Sellers with no sales in the last 6 months - showing last sale date and total historical sales.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q15</div>
+        <h4>Customer Segmentation</h4>
+        <p>Classifying customers as Returning or New based on return behaviour - listing total orders and returns.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q16</div>
+        <h4>Top 5 Customers by State</h4>
+        <p>Top 5 customers per US state by order count - using DENSE_RANK() partitioned by state.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q17</div>
+        <h4>Revenue by Shipping Provider</h4>
+        <p>Total revenue and order volume per shipping provider - with average delivery time using COALESCE.</p>
+      </div>
+
+      <div class="an-card">
+        <div class="an-num">Q18</div>
+        <h4>Revenue Decline by Product</h4>
+        <p>Top 10 products with the highest revenue decrease ratio between 2022 and 2023 using year-on-year CTEs.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ 07 LEARNING OUTCOMES ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">07</span>
+      <h2 class="sec-title">Learning Outcomes</h2>
+    </div>
+    <div class="two-cols">
+      <div class="col-left">
+        <p>This project enabled the development of end-to-end SQL proficiency - from schema design through to complex analytical querying on a production-scale dataset.</p>
+        <div class="highlight">Advanced SQL techniques were applied throughout: window functions, subqueries, CTEs, and multi-table joins - all in service of real business questions.</div>
+      </div>
+      <div class="col-right">
+        <div class="outcomes-list">
+          <div class="out-item"><span class="out-icon">→</span><span class="out-text">Design and implement a normalised database schema.</span></div>
+          <div class="out-item"><span class="out-icon">→</span><span class="out-text">Clean and preprocess real-world datasets for analysis.</span></div>
+          <div class="out-item"><span class="out-icon">→</span><span class="out-text">Use advanced SQL techniques, including window functions, subqueries, and joins.</span></div>
+          <div class="out-item"><span class="out-icon">→</span><span class="out-text">Conduct in-depth business analysis using SQL.</span></div>
+          <div class="out-item"><span class="out-icon">→</span><span class="out-text">Optimise query performance and handle large datasets efficiently.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 08 CONCLUSION ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">08</span>
+      <h2 class="sec-title">Conclusion</h2>
+    </div>
+    <div class="two-cols">
+      <div class="col-left">
+        <p>This advanced SQL project successfully demonstrates the ability to solve real-world e-commerce problems using structured queries. From improving customer retention to optimising inventory and logistics, the project provides valuable insights into operational challenges and solutions.</p>
+        <p>By completing this project, a deeper understanding was gained of how SQL can be used to tackle complex data problems and drive business decision-making.</p>
+      </div>
+      <div class="col-right" style="justify-content: flex-start; padding-top: 4px;">
+        <div class="three-cards" style="grid-template-columns: 1fr; gap: 12px;">
+          <div class="th-card">
+            <h4>Customer Retention</h4>
+            <p>Identified inactive buyers and segmented customers by return behaviour to surface retention opportunities.</p>
+          </div>
+          <div class="th-card">
+            <h4>Inventory &amp; Logistics</h4>
+            <p>Flagged low-stock products and shipping delays, providing actionable signals for operational improvement.</p>
+          </div>
+          <div class="th-card">
+            <h4>Revenue Intelligence</h4>
+            <p>Mapped category performance, profit margins, and year-on-year revenue decline at the product level.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ CTA ══ -->
+  <div class="cta-section">
+    <h2 class="cta-title">View the <span>Full SQL Scripts</span></h2>
+    <p class="cta-body">
+      The complete schema setup, data cleaning scripts, and all 18 SQL queries 
+      are available in the GitHub repository. The full scripts are available on GitHub.
+    </p>
+    <div class="cta-tags">
+      <a href="https://github.com/JarVoo/Amazon-Advanced-SQL-Project" target="_blank" class="cta-tag primary">View on GitHub →</a>
+      <a href="https://jarredsportfolio.netlify.app/projects" target="_blank" class="cta-tag">Back to Portfolio</a>
+    </div>
+  </div>
+
+  <!-- ══ FOOTER ══ -->
+  <footer>
+    <p>Jarred Voorneveld - Data Analyst</p>
+    <div class="footer-wordmark">
+      <div class="fw-title">Amazon Sales Analysis</div>
+      <div class="fw-sub">Advanced SQL · PostgreSQL</div>
+    </div>
+    <p>Oct 2024 · Portfolio Project</p>
+  </footer>
+
+</div>
+</body>
+</html>
