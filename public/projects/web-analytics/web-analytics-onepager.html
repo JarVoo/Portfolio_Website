@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web Analytics Project - Jarred Voorneveld</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:      #0a0a0a;
+    --dark:       #111111;
+    --dark-mid:   #1a1a1a;
+    --dark-card:  #141414;
+    --teal:       #3dd6c8;
+    --teal-dim:   rgba(61,214,200,0.12);
+    --teal-rule:  rgba(61,214,200,0.28);
+    --white:      #ffffff;
+    --grey-light: #c8c8c8;
+    --grey-mid:   #888888;
+    --grey-dark:  #444444;
+    --rule:       rgba(255,255,255,0.07);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--grey-light);
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page-wrapper { max-width: 1080px; margin: 0 auto; padding: 0 48px; }
+
+  /* ── UTILITIES ── */
+  .teal-rule-short { width: 40px; height: 2px; background: var(--teal); margin-bottom: 18px; }
+
+  .mono-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    display: block;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 52px 0 44px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 40px;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .wordmark { margin-bottom: 28px; }
+  .wordmark-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--white); line-height: 1; }
+  .wordmark-sub { font-family: 'Barlow Condensed', sans-serif; font-weight: 400; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--teal); margin-top: 5px; }
+
+  .header-headline { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: clamp(34px, 5vw, 58px); line-height: 1.05; letter-spacing: 0.01em; text-transform: uppercase; color: var(--white); }
+  .header-headline span { color: var(--teal); }
+
+  .header-sub { margin-top: 18px; font-size: 15px; color: var(--grey-mid); max-width: 580px; line-height: 1.8; }
+
+  .header-right { text-align: right; padding-top: 4px; }
+  .header-right .mono-label { margin-bottom: 10px; }
+  .header-right p { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--grey-mid); line-height: 2; }
+
+  .doc-badge { display: inline-block; margin-top: 18px; padding: 7px 16px; border: 1px solid var(--teal-rule); font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); }
+
+  /* ── HERO BAND ── */
+  .hero-band { position: relative; width: calc(100% + 96px); margin-left: -48px; height: 280px; overflow: hidden; animation: fadeUp 0.7s 0.1s ease both; }
+  .hero-band img { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: brightness(0.28) saturate(0.4); display: block; }
+  .hero-band .overlay { position: absolute; inset: 0; background: linear-gradient(to right, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.4) 50%, rgba(10,10,10,0.75) 100%); }
+  .hero-stats { position: absolute; bottom: 0; left: 0; right: 0; display: flex; border-top: 1px solid var(--teal-rule); }
+  .h-stat { flex: 1; text-align: center; padding: 18px 14px; border-right: 1px solid var(--teal-rule); }
+  .h-stat:last-child { border-right: none; }
+  .h-stat .snum { font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 700; color: var(--teal); line-height: 1; }
+  .h-stat .slabel { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey-mid); margin-top: 5px; }
+
+  /* ── SECTIONS ── */
+  section { padding: 56px 0; border-top: 1px solid var(--rule); animation: fadeUp 0.7s ease both; }
+  .sec-header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 30px; }
+  .sec-num { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.2em; color: var(--teal); text-transform: uppercase; }
+  .sec-title { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--white); line-height: 1; }
+
+  /* ── TWO-COL ── */
+  .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .col-left { padding-right: 44px; border-right: 1px solid var(--rule); }
+  .col-right { padding-left: 44px; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+  .col-left p { font-size: 15px; line-height: 1.8; color: var(--grey-light); margin-bottom: 14px; }
+  .col-left p:last-child { margin-bottom: 0; }
+
+  .pull-quote { border-left: 2px solid var(--teal); padding-left: 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 400; font-style: italic; color: var(--white); line-height: 1.5; }
+  .col-right-body { font-size: 14px; color: var(--grey-mid); line-height: 1.8; }
+
+  /* ── PILLS ── */
+  .pills { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pill { padding: 8px 18px; border: 1px solid var(--teal-rule); font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey-light); background: var(--dark-mid); transition: all 0.2s ease; }
+  .pill:hover { background: var(--teal-dim); color: var(--teal); border-color: var(--teal); }
+
+  /* ── TIMELINE - chronological findings ── */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+
+  .tl-item {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .tl-item:last-child { border-bottom: none; }
+
+  .tl-date {
+    padding: 24px 20px 24px 0;
+    border-right: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .tl-date .date-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--teal);
+    text-transform: uppercase;
+  }
+
+  .tl-date .date-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--grey-dark);
+  }
+
+  .tl-body { padding: 24px 0 24px 28px; }
+
+  .tl-body h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 10px;
+  }
+
+  .tl-body p {
+    font-size: 14px;
+    color: var(--grey-light);
+    line-height: 1.75;
+    margin-bottom: 12px;
+  }
+
+  .tl-body p:last-child { margin-bottom: 0; }
+
+  .tl-finding {
+    background: var(--teal-dim);
+    border-left: 2px solid var(--teal);
+    padding: 10px 14px;
+    font-size: 13.5px;
+    color: var(--grey-light);
+    line-height: 1.65;
+    margin-top: 10px;
+  }
+
+  .tl-finding strong { color: var(--teal); font-weight: 600; }
+
+  /* ── CHART IMAGE ── */
+  .chart-img-wrap {
+    margin: 14px 0 4px;
+    overflow: hidden;
+    position: relative;
+    max-width: 40%;
+  }
+
+  .chart-img-wrap.larger {
+    max-width: 52%;
+  }
+
+  .chart-label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 8.5px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 6px;
+  }
+
+  .chart-img-wrap img {
+    width: 100%;
+    display: block;
+    border: 1px solid var(--teal-rule);
+    filter: brightness(0.92);
+    transition: filter 0.25s ease;
+  }
+
+  .chart-img-wrap:hover img { filter: brightness(1); }
+
+  /* ── THREE-COL CARDS ── */
+  .three-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .th-card { padding: 22px 20px; border: 1px solid var(--rule); background: var(--dark-card); border-top: 2px solid var(--teal); transition: background 0.2s ease; }
+  .th-card:hover { background: var(--dark-mid); }
+  .th-card h4 { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--white); margin-bottom: 8px; }
+  .th-card p { font-size: 13px; color: var(--grey-mid); line-height: 1.65; }
+
+  /* ── OUTCOMES ── */
+  .outcomes-list { display: flex; flex-direction: column; border: 1px solid var(--rule); }
+  .out-item { padding: 15px 22px; border-bottom: 1px solid var(--rule); display: flex; gap: 14px; align-items: flex-start; transition: background 0.2s ease; }
+  .out-item:last-child { border-bottom: none; }
+  .out-item:hover { background: var(--dark-mid); }
+  .out-icon { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--teal); padding-top: 3px; min-width: 20px; opacity: 0.8; }
+  .out-text { font-size: 14px; color: var(--grey-light); line-height: 1.65; }
+  .out-text strong { color: var(--white); font-weight: 600; }
+
+  /* ── METRIC CARDS ── */
+  .metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 24px; }
+  .metric-cell { background: var(--dark); padding: 20px 22px; }
+  .metric-cell .mc-label { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); margin-bottom: 8px; }
+  .metric-cell .mc-val { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+  .metric-cell .mc-desc { font-size: 12.5px; color: var(--grey-mid); line-height: 1.6; }
+
+  /* ── HIGHLIGHT ── */
+  .highlight { background: var(--teal-dim); border-left: 2px solid var(--teal); padding: 16px 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-style: italic; font-weight: 400; color: var(--white); line-height: 1.5; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  section:nth-of-type(1) { animation-delay: 0.05s; }
+  section:nth-of-type(2) { animation-delay: 0.10s; }
+  section:nth-of-type(3) { animation-delay: 0.14s; }
+  section:nth-of-type(4) { animation-delay: 0.18s; }
+  section:nth-of-type(5) { animation-delay: 0.21s; }
+  section:nth-of-type(6) { animation-delay: 0.24s; }
+  section:nth-of-type(7) { animation-delay: 0.27s; }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ══ HEADER ══ -->
+  <header>
+    <div>
+      <div class="wordmark">
+        <div class="wordmark-title">Jarred Voorneveld</div>
+        <div class="wordmark-sub">Portfolio - Data Analysis</div>
+      </div>
+      <h1 class="header-headline">
+        Web Analytics<br>
+        Project Using<br>
+        <span>SQL &amp; Python</span>
+      </h1>
+      <p class="header-sub">
+        An end-to-end web analytics engagement for Maven Fuzzy Factory - a new 
+        e-commerce toy retailer - analysing traffic sources, website performance, 
+        conversion funnels, and A/B test results across a full year of growth.
+      </p>
+    </div>
+    <div class="header-right">
+      <span class="mono-label">Document Type</span>
+      <p>Portfolio Project<br>eCommerce Analytics<br>SQL &amp; Python</p>
+      <span class="doc-badge">Web Analytics · Sep 2024</span>
+    </div>
+  </header>
+
+  <!-- ══ HERO BAND ══ -->
+  <div class="hero-band">
+    <img src="https://jarredsportfolio.netlify.app/projects/web-analytics/hero.webp" alt="Web Analytics Project">
+    <div class="overlay"></div>
+    <div class="hero-stats">
+      <div class="h-stat"><div class="snum">3</div><div class="slabel">Stakeholders</div></div>
+      <div class="h-stat"><div class="snum">200+</div><div class="slabel">Incremental Orders</div></div>
+      <div class="h-stat"><div class="snum">$8.51</div><div class="slabel">Revenue Lift per Billing Page</div></div>
+      <div class="h-stat"><div class="snum">6%</div><div class="slabel">Bounce Rate Improvement</div></div>
+    </div>
+  </div>
+
+  <!-- ══ 01 INTRODUCTION ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title">Introduction</h2>
+    </div>
+    <div class="two-cols">
+      <div class="col-left">
+        <p>SQL and Python were used to analyse data from an e-commerce store that sells kids toys called Maven Fuzzy Factory. As a new company, this project follows their performance over the first several months of operation, taking on the role of eCommerce Database Analyst.</p>
+        <p>Working directly with the CEO, Marketing Director, and Website Manager, the analysis spans three core pillars: traffic analysis and optimisation, website performance and conversion funnel analysis, and business pattern analysis.</p>
+        <p>Each pillar addresses real business questions from real stakeholders - with findings feeding directly into bid adjustments, page redesigns, and A/B testing decisions.</p>
+      </div>
+      <div class="col-right">
+        <div class="pull-quote">"Appointed as eCommerce Database Analyst, working directly with the CEO, Marketing Director, and Website Manager to grow and steer the business."</div>
+        <div>
+          <p class="mono-label" style="margin-bottom: 12px;">Tech Stack</p>
+          <div class="pills">
+            <span class="pill">SQL</span>
+            <span class="pill">Python</span>
+            <span class="pill">Window Functions</span>
+            <span class="pill">CTEs</span>
+            <span class="pill">A/B Testing</span>
+            <span class="pill">Conversion Funnels</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 02 PROBLEM STATEMENT ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title">Problem Statement</h2>
+    </div>
+    <p style="font-size:15px;line-height:1.8;color:var(--grey-light);max-width:820px;margin-bottom:28px;">
+      Working directly with the CEO, Marketing Director, and Website Manager to help grow 
+      the business and analyse performance along the way - making recommendations to steer 
+      strategy across marketing channels and the website itself.
+    </p>
+    <div class="three-cards">
+      <div class="th-card">
+        <h4>Traffic &amp; Channels</h4>
+        <p>Which marketing channels are driving the most traffic and conversions? Which to invest in or scale back? What are conversion rates across campaigns?</p>
+      </div>
+      <div class="th-card">
+        <h4>Website Performance</h4>
+        <p>How do customers interact with different pages and channels before purchasing? What are the results of A/B tests? What are conversion rates at each funnel stage?</p>
+      </div>
+      <div class="th-card">
+        <h4>Business Patterns</h4>
+        <p>Analyse average website session volume by hour of day and day of week to determine when to staff a new live chat support system.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 03 TRAFFIC ANALYSIS ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title">Analysing Traffic Sources</h2>
+    </div>
+    <p style="font-size:15px;line-height:1.8;color:var(--grey-light);max-width:820px;margin-bottom:32px;">
+      One month after the database launch, the analysis begins by identifying where traffic 
+      is coming from, how it converts, and guiding management to adjust bids to optimise 
+      marketing spend. Full SQL scripts are available on GitHub.
+    </p>
+
+    <div class="timeline">
+
+      <!-- CVR -->
+      <div class="tl-item">
+        <div class="tl-date">
+          <span class="date-label">April 2012</span>
+          <span class="date-tag">Month 1</span>
+        </div>
+        <div class="tl-body">
+          <h4>Conversion Rate from Session to Order</h4>
+          <p>The Marketing Director required CVR to exceed 4% to justify the current paid click bids on gsearch nonbrand. A query was run across all sessions up to 14 April 2012.</p>
+          <div class="tl-finding">The CVR came back at <strong>2.9%</strong> - below the 4% threshold. Bids were reduced. Over-spending was confirmed.</div>
+        </div>
+      </div>
+
+      <!-- Weekly sessions after bid down -->
+      <div class="tl-item">
+        <div class="tl-date">
+          <span class="date-label">10 May 2012</span>
+          <span class="date-tag">Bid Change</span>
+        </div>
+        <div class="tl-body">
+          <h4>Weekly Session Volume After Bid Reduction</h4>
+          <p>The Marketing Director bid down on gsearch nonbrand on 15 April 2012. Weekly session volume was pulled to observe whether the bid change had caused volume to drop.</p>
+          <span class="chart-label">Weekly Sessions - gsearch nonbrand</span>
+          <div class="chart-img-wrap larger">
+            <img src="https://jarredsportfolio.netlify.app/projects/web-analytics/weekly-sessions.png" alt="Weekly Sessions Over Time">
+          </div>
+          <div class="tl-finding">gsearch nonbrand is <strong>sensitive to bid changes</strong> - volume decreased after the bid reduction. To maximise volume without increasing spend, campaigns needed to become more efficient.</div>
+        </div>
+      </div>
+
+      <!-- Device CVR -->
+      <div class="tl-item">
+        <div class="tl-date">
+          <span class="date-label">11 May 2012</span>
+          <span class="date-tag">Device Split</span>
+        </div>
+        <div class="tl-body">
+          <h4>Conversion Rate by Device Type</h4>
+          <p>The Marketing Director flagged a poor mobile experience. CVR was pulled from session to order, split by device type, to determine whether separate bids were warranted.</p>
+          <div class="tl-finding"><strong>Mobile and desktop should not carry the same bids.</strong> Desktop significantly outperformed mobile in CVR - bidding higher on desktop was the recommended path forward.</div>
+        </div>
+      </div>
+
+      <!-- Desktop vs mobile weekly trend -->
+      <div class="tl-item">
+        <div class="tl-date">
+          <span class="date-label">9 June 2012</span>
+          <span class="date-tag">Impact Review</span>
+        </div>
+        <div class="tl-body">
+          <h4>Weekly Volume by Device - Post Bid Adjustment</h4>
+          <p>A new bid on gsearch nonbrand was placed on 19 May 2012. Weekly session trends were pulled by device type to measure the impact on volume across both desktop and mobile.</p>
+          <span class="chart-label">Desktop vs Mobile - Weekly Sessions</span>
+          <div class="chart-img-wrap larger">
+            <img src="https://jarredsportfolio.netlify.app/projects/web-analytics/weekly-device.png" alt="Weekly Data - Desktop vs Mobile">
+          </div>
+          <div class="tl-finding">Desktop session volume <strong>increased after the May bid</strong>, while mobile volume decreased in line with its reduced bid. The bid strategy was working exactly as intended.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ 04 WEBSITE PERFORMANCE ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">04</span>
+      <h2 class="sec-title">Analysing Website Performance</h2>
+    </div>
+    <p style="font-size:15px;line-height:1.8;color:var(--grey-light);max-width:820px;margin-bottom:32px;">
+      Understanding where customers land, how they navigate the site, where they drop off, 
+      and how A/B tests on key pages improved conversion rates and revenue.
+    </p>
+
+    <div class="timeline">
+
+      <!-- Most viewed pages -->
+      <div class="tl-item">
+        <div class="tl-date">
+          <span class="date-label">9 June 2012</span>
+          <span class="date-tag">Page Views</span>
+        </div>
+        <div class="tl-body">
+          <h4>Most Viewed Website Pages by Session Volume</h4>
+          <p>The Website Manager requested an overview of the most viewed pages, ranked by session volume up to 9 June 2012.</p>
+          <span class="chart-label">Pageview Sessions by URL</span>
+          <div class="chart-img-wrap">
+            <img src="https://jarredsportfolio.netlify.app/projects/web-analytics/pageview-sessions.png" alt="Pageview URL Sessions">
+          </div>
+          <div class="tl-finding">The <strong>/home</strong>, <strong>/products</strong>, and <strong>/the-original-mr-fuzzy</strong> pages were the most visited. The logical next question: where are users entering the site?</div>
+        </div>
+      </div>
+
+      <!-- Bounce rate home -->
+      <div class="tl-item">
+        <div class="tl-date">
+          <span class="date-label">14 June 2012</span>
+          <span class="date-tag">Bounce Analysis</span>
+        </div>
+        <div class="tl-body">
+          <h4>Home Page Bounce Rate Analysis</h4>
+          <p>Bounce rates on the home page were analysed to understand how many paid search visitors were leaving without exploring further.</p>
+          <div class="tl-finding">Bounce rate of <strong>59%</strong> - unusually high for paid search traffic which should be high quality. A new landing page experiment was proposed to test whether a custom page could improve this.</div>
+        </div>
+      </div>
+
+      <!-- A/B test lander-1 -->
+      <div class="tl-item">
+        <div class="tl-date">
+          <span class="date-label">28 July 2012</span>
+          <span class="date-tag">A/B Test</span>
+        </div>
+        <div class="tl-body">
+          <h4>Landing Page A/B Test - /home vs /lander-1</h4>
+          <p>The Website Manager ran a custom /lander-1 page in a 50/50 test against the original /home page. Bounce rates were pulled for both groups across gsearch nonbrand paid sessions.</p>
+          <span class="chart-label">Bounce Rate - /home vs /lander-1</span>
+          <div class="chart-img-wrap">
+            <img src="https://jarredsportfolio.netlify.app/projects/web-analytics/bounce-rate.png" alt="Landing Page Bounce Rates">
+          </div>
+          <div class="tl-finding"><strong>/lander-1 outperformed /home</strong> with a lower bounce rate. Management directed all paid nonbrand traffic to the new page.</div>
+        </div>
+      </div>
+
+      <!-- Weekly bounce rate trends -->
+      <div class="tl-item">
+        <div class="tl-date">
+          <span class="date-label">31 Aug 2012</span>
+          <span class="date-tag">Trend Review</span>
+        </div>
+        <div class="tl-body">
+          <h4>Bounce Rate Trend Since Lander-1 Rollout</h4>
+          <p>The Website Manager requested a weekly view of the overall paid search bounce rate since 1 June 2012, alongside session volumes for /home and /lander-1, to confirm the new page was delivering sustained improvement.</p>
+          <span class="chart-label">Weekly Bounce Rate - Paid Search Nonbrand</span>
+          <div class="chart-img-wrap">
+            <img src="https://jarredsportfolio.netlify.app/projects/web-analytics/weekly-bounce-rate.png" alt="Weekly Bounce Rate Trends">
+          </div>
+          <div class="tl-finding">Traffic switched to /lander-1 at end of July. Bounce rate fell from <strong>just over 60%</strong> to the <strong>low 50% range</strong>, with /lander-1 session volume exceeding /home as the primary entry point.</div>
+        </div>
+      </div>
+
+      <!-- Conversion funnel -->
+      <div class="tl-item">
+        <div class="tl-date">
+          <span class="date-label">5 Sep 2012</span>
+          <span class="date-tag">Funnel Analysis</span>
+        </div>
+        <div class="tl-body">
+          <h4>Full Conversion Funnel Analysis</h4>
+          <p>A full conversion funnel was built tracking how many customers made it through each stage from the new lander page through to order completion, across six page steps.</p>
+          <span class="chart-label">Click-Through Rate by Funnel Stage</span>
+          <div class="chart-img-wrap larger">
+            <img src="https://jarredsportfolio.netlify.app/projects/web-analytics/conversion-rates.png" alt="Conversion Rates by Stage">
+          </div>
+          <div class="tl-finding">The <strong>/lander-1 page</strong>, <strong>/the-original-mr-fuzzy</strong>, and <strong>/billing page</strong> showed the lowest click-through rates - these became the priority pages for optimisation.</div>
+        </div>
+      </div>
+
+      <!-- Billing A/B test -->
+      <div class="tl-item">
+        <div class="tl-date">
+          <span class="date-label">10 Nov 2012</span>
+          <span class="date-tag">Revenue Lift</span>
+        </div>
+        <div class="tl-body">
+          <h4>Billing Page A/B Test - Revenue Lift Analysis</h4>
+          <p>The billing page A/B test ran between 10 September and 10 November 2012. Revenue per billing page session was calculated for both /billing and /billing-2 to quantify the lift from the new version.</p>
+          <span class="chart-label">Revenue per Billing Page Session</span>
+          <div class="chart-img-wrap">
+            <img src="https://jarredsportfolio.netlify.app/projects/web-analytics/billing-test.png" alt="Billing Test Results">
+          </div>
+          <div class="tl-finding">
+            <strong>$22.83</strong> revenue per session on the old /billing page vs <strong>$31.34</strong> on /billing-2 - a lift of <strong>$8.51 per billing page view</strong>. A major improvement.
+          </div>
+        </div>
+      </div>
+
+      <!-- Lander revenue estimate -->
+      <div class="tl-item">
+        <div class="tl-date">
+          <span class="date-label">27 Nov 2012</span>
+          <span class="date-tag">Revenue Estimate</span>
+        </div>
+        <div class="tl-body">
+          <h4>Estimated Revenue from Lander-1 Test</h4>
+          <p>The last objective was to estimate the revenue earned from the gsearch lander test - measuring the uplift in conversion rate from 19 June to 28 July 2012 for nonbrand sessions, then extrapolating across the months since /lander-1 fully took over.</p>
+          <span class="chart-label">CVR - /home vs /lander-1</span>
+          <div class="chart-img-wrap">
+            <img src="https://jarredsportfolio.netlify.app/projects/web-analytics/lander-test.png" alt="Lander Test Conversion Rates">
+          </div>
+          <div class="tl-finding">
+            CVR of <strong>3.19%</strong> for /home vs <strong>4.06%</strong> for /lander-1 - an uplift of <strong>0.0087 additional orders per session</strong>. Across 22,972 sessions since the test, that translates to roughly <strong>200 incremental orders over 4 months</strong> - approximately 50 extra orders per month.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ 05 CONCLUSION ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">05</span>
+      <h2 class="sec-title">Conclusion</h2>
+    </div>
+    <div class="two-cols">
+      <div class="col-left">
+        <p>In helping the team at Maven Fuzzy Factory, the analysis successfully guided traffic optimisation, landing page strategy, and billing page improvements across a full year of growth - each finding feeding directly into actionable decisions.</p>
+        <p>The project demonstrates how structured SQL querying and systematic A/B testing can drive measurable revenue impact even in the earliest stages of an e-commerce business.</p>
+        <div class="highlight" style="margin-top: 20px;">Over $10,000 in additional revenue from the /billing-2 test, and 200 extra orders over 4 months from the /lander-1 improvement - both quantified through structured query analysis.</div>
+      </div>
+      <div class="col-right" style="justify-content:flex-start;">
+        <div class="outcomes-list">
+          <div class="out-item">
+            <span class="out-icon">→</span>
+            <span class="out-text"><strong>Traffic routing:</strong> Before the A/B test all traffic hit /home. After /lander-1 launched, all traffic was successfully routed to the new page with a 6% improvement in bounce rate.</span>
+          </div>
+          <div class="out-item">
+            <span class="out-icon">→</span>
+            <span class="out-text"><strong>Session volume and CVR:</strong> After bid adjustments and device-level targeting, session volume increased and the order-to-session conversion rate improved.</span>
+          </div>
+          <div class="out-item">
+            <span class="out-icon">→</span>
+            <span class="out-text"><strong>Desktop bidding:</strong> Bidding higher on desktop resulted in increased session volume and improved CVR for the highest-converting device type.</span>
+          </div>
+          <div class="out-item">
+            <span class="out-icon">→</span>
+            <span class="out-text"><strong>Billing page lift:</strong> Over $10,000 in additional revenue attributed to the /billing-2 test across the two-month test window.</span>
+          </div>
+          <div class="out-item">
+            <span class="out-icon">→</span>
+            <span class="out-text"><strong>Lander incremental orders:</strong> Approximately 200 extra orders over the 4 months since /lander-1 fully took over - around 50 extra orders per month.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metric-row">
+      <div class="metric-cell">
+        <div class="mc-label">Billing Page Revenue Lift</div>
+        <div class="mc-val">$8.51</div>
+        <div class="mc-desc">Per billing page view - /billing-2 vs /billing</div>
+      </div>
+      <div class="metric-cell">
+        <div class="mc-label">Incremental Orders (4 months)</div>
+        <div class="mc-val">~200</div>
+        <div class="mc-desc">From /lander-1 replacing /home as the paid search entry page</div>
+      </div>
+      <div class="metric-cell">
+        <div class="mc-label">Bounce Rate Improvement</div>
+        <div class="mc-val">-6%</div>
+        <div class="mc-desc">From 60%+ down to low 50% range after /lander-1 rollout</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ GITHUB LINK ══ -->
+  <div style="border-top:1px solid rgba(255,255,255,0.07);padding:32px 0;display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <p style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#3dd6c8;margin-bottom:6px;">Source Files</p>
+      <p style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:#c8c8c8;">Full SQL scripts and Python notebooks - Web Analytics Project</p>
+    </div>
+    <a href="https://github.com/JarVoo/Web-Analytics-Project" target="_blank" style="padding:11px 28px;background:#3dd6c8;color:#0a0a0a;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;white-space:nowrap;transition:background 0.2s ease;" onmouseover="this.style.background='#5ee8db'" onmouseout="this.style.background='#3dd6c8'">View on GitHub →</a>
+  </div>
+
+  <!-- ══ FOOTER ══ -->
+  <footer style="border-top:1px solid rgba(255,255,255,0.07);padding:26px 0;display:flex;justify-content:space-between;align-items:center;">
+    <p style="font-family:'DM Mono',monospace;font-size:10px;color:#444;letter-spacing:0.1em;">Jarred Voorneveld - Data Analyst</p>
+    <div style="text-align:center;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:0.25em;text-transform:uppercase;color:#ffffff;line-height:1;">Web Analytics Project</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:#3dd6c8;margin-top:3px;">SQL &amp; Python · Sep 2024</div>
+    </div>
+    <p style="font-family:'DM Mono',monospace;font-size:10px;color:#444;letter-spacing:0.1em;">Sep 2024 · Portfolio Project</p>
+  </footer>
+
+</div>
+</body>
+</html>
