@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whiskique – E-Commerce Performance Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script src="./states-data.js"></script>
+<style>
+:root{--black:#0a0a0a;--dark:#111;--panel:#141414;--teal:#3dd6c8;--teal-dim:rgba(61,214,200,0.12);--teal-rule:rgba(61,214,200,0.28);--white:#fff;--grey:#c8c8c8;--grey-mid:#888;--border:rgba(255,255,255,0.07);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--black);color:var(--grey);font-family:'Barlow',sans-serif;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+
+/* ── STANDALONE DASHBOARD BLOCK ── */
+.dashboard{width:100%;height:840px;display:flex;flex-direction:column;overflow:hidden;background:var(--black);font-size:13px;}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;height:52px;border-bottom:1px solid var(--border);background:var(--panel);padding:0 24px;flex-shrink:0;}
+.brand{display:flex;align-items:center;gap:10px;margin-right:32px;}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);}
+.brand-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:0.18em;text-transform:uppercase;color:var(--white);}
+.brand-sub{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:var(--teal);}
+.nav{display:flex;height:100%;}
+.nav-btn{padding:0 20px;height:100%;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey-mid);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:color .15s,border-color .15s;}
+.nav-btn:hover{color:var(--grey);}
+.nav-btn.active{color:var(--teal);border-bottom-color:var(--teal);}
+.topbar-meta{margin-left:auto;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--grey-mid);}
+
+/* ── LAYOUT ── */
+.layout{display:flex;height:788px;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:180px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:12px 0;}
+.slicer-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:var(--teal);padding:0 14px 8px;border-bottom:1px solid var(--border);margin-bottom:4px;flex-shrink:0;}
+.slicer-item{padding:7px 14px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--grey-mid);cursor:pointer;border-left:3px solid transparent;transition:all .12s;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.slicer-item:hover{color:var(--grey);background:rgba(255,255,255,0.04);}
+.slicer-item.active{color:var(--teal);background:var(--teal-dim);border-left-color:var(--teal);}
+.slicer-divider{margin:10px 14px;height:1px;background:var(--border);flex-shrink:0;}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 20px;display:flex;flex-direction:column;}
+
+/* ── PANELS ── */
+.panel{display:none;flex-direction:column;flex:1;}
+.panel.active{display:flex;}
+
+/* ── KPI STRIP ── */
+.kpi-strip{display:grid;gap:1px;background:var(--border);flex-shrink:0;margin-bottom:12px;}
+.kpi-card{background:var(--panel);padding:12px 16px;}
+.kpi-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:5px;}
+.kpi-value{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;color:var(--teal);line-height:1;}
+.kpi-sub{font-family:'DM Mono',monospace;font-size:7.5px;color:var(--grey-mid);margin-top:2px;letter-spacing:.06em;}
+
+/* ── CHART CARD ── */
+.chart-card{background:var(--panel);border:1px solid var(--border);padding:14px 16px;display:flex;flex-direction:column;}
+.chart-card-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--white);margin-bottom:1px;flex-shrink:0;}
+.chart-card-sub{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.1em;color:var(--grey-mid);margin-bottom:8px;flex-shrink:0;}
+.chart-wrap{position:relative;width:100%;flex:1;min-height:0;}
+
+/* ── HOME ── */
+.home-hero{background:var(--panel);border:1px solid var(--border);padding:28px 32px;margin-bottom:12px;display:flex;align-items:center;gap:32px;flex-shrink:0;}
+.home-hero img{width:220px;height:140px;object-fit:cover;filter:brightness(.35) saturate(.4);flex-shrink:0;}
+.home-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(22px,3vw,34px);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--white);line-height:1.1;margin-bottom:10px;}
+.home-sub{font-size:13px;color:var(--grey-mid);line-height:1.7;max-width:520px;}
+.home-nav-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;flex-shrink:0;}
+.home-card{background:var(--panel);border:1px solid var(--border);padding:18px 20px;cursor:pointer;transition:border-color .15s,background .15s;}
+.home-card:hover{border-color:var(--teal-rule);background:rgba(61,214,200,0.04);}
+.home-card-num{font-family:'DM Mono',monospace;font-size:9px;color:var(--teal);letter-spacing:.2em;margin-bottom:8px;}
+.home-card-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--white);margin-bottom:4px;}
+.home-card-desc{font-size:11px;color:var(--grey-mid);line-height:1.5;}
+.home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);flex-shrink:0;}
+.home-stat{background:var(--panel);padding:14px 16px;}
+.home-stat-v{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;color:var(--teal);line-height:1;}
+.home-stat-l{font-family:'DM Mono',monospace;font-size:8px;color:var(--grey-mid);letter-spacing:.12em;text-transform:uppercase;margin-top:4px;}
+
+/* ── EXEC LAYOUT ── */
+.exec-grid{display:flex;gap:12px;flex:1;min-height:0;}
+.exec-left{flex:58;min-width:0;display:flex;flex-direction:column;}
+.exec-right{flex:42;min-width:0;display:flex;flex-direction:column;gap:12px;}
+
+/* ── SHIPPING ── */
+.ship-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);flex-shrink:0;margin-bottom:12px;}
+.ship-kpi{background:var(--panel);padding:12px 16px;}
+.ship-kpi-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:5px;}
+.ship-kpi-value{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--teal);line-height:1;}
+.whatif-box{background:var(--panel);border:1px solid var(--border);padding:14px 20px;flex-shrink:0;margin-bottom:12px;}
+.wi-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--white);margin-bottom:2px;}
+.wi-sub{font-family:'DM Mono',monospace;font-size:7.5px;color:var(--grey-mid);margin-bottom:10px;letter-spacing:.08em;}
+.slider-row{display:flex;align-items:center;gap:14px;}
+.sl-label{font-family:'DM Mono',monospace;font-size:8px;color:var(--grey-mid);white-space:nowrap;}
+input[type=range]{-webkit-appearance:none;flex:1;height:2px;background:var(--grey-mid);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--teal);cursor:pointer;}
+.sl-val{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--teal);min-width:36px;text-align:right;}
+
+/* ── BASKET TABLE ── */
+.pair-table{width:100%;border-collapse:collapse;}
+.pair-table th{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--grey-mid);padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);}
+.pair-table td{padding:5px 10px;font-size:11px;color:var(--grey);border-bottom:1px solid rgba(255,255,255,0.04);}
+.pair-count{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--teal);}
+.bar-mini{height:3px;background:var(--teal-dim);border-radius:2px;margin-top:3px;}
+.bar-mini-fill{height:100%;background:var(--teal);border-radius:2px;}
+
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-dot"></div>
+    <div>
+      <div class="brand-name">Whiskique</div>
+      <div class="brand-sub">Online Pet Store · Power BI</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="setPage('home',this)">Home</button>
+    <button class="nav-btn" onclick="setPage('exec',this)">Executive Summary</button>
+    <button class="nav-btn" onclick="setPage('ship',this)">Shipping Metrics</button>
+    <button class="nav-btn" onclick="setPage('basket',this)">Market Basket</button>
+  </nav>
+  <div class="topbar-meta">Dec 2020 – Dec 2021 &nbsp;·&nbsp; 51 States &nbsp;·&nbsp; 20 Products</div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="slicer-label" id="stateLabel">State Filter</div>
+    <div id="stateSlicer"></div>
+    <div class="slicer-divider" id="descDivider" style="display:none;"></div>
+    <div class="slicer-label" id="descLabel" style="display:none;">Product</div>
+    <div id="descSlicer"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="main">
+
+    <!-- ══ HOME ══ -->
+    <div class="panel active" id="panel-home">
+      <div class="home-hero">
+        <img src="./hero.webp" alt="Whiskique">
+        <div>
+          <div class="home-title">E-Commerce Performance<br>Analysis in Power BI</div>
+          <div class="home-sub">A four-page Power BI report for Whiskique — a US-based online pet store. Covers executive financials, shipping cost modelling, and market basket cross-sell analysis across 20 products, 51 states, and 13 months of transactional data.</div>
+        </div>
+      </div>
+      <div class="home-nav-cards">
+        <div class="home-card" onclick="setPageByName('exec')">
+          <div class="home-card-num">01 ——</div>
+          <div class="home-card-title">Executive Summary</div>
+          <div class="home-card-desc">Revenue by category, top products by description, and geographic breakdown. Filter by state.</div>
+        </div>
+        <div class="home-card" onclick="setPageByName('ship')">
+          <div class="home-card-num">02 ——</div>
+          <div class="home-card-title">Shipping Metrics</div>
+          <div class="home-card-desc">Shipping cost per 1,000 miles by SKU and a What-If bulk quantity multiplier model.</div>
+        </div>
+        <div class="home-card" onclick="setPageByName('basket')">
+          <div class="home-card-num">03 ——</div>
+          <div class="home-card-title">Market Basket</div>
+          <div class="home-card-desc">Co-purchase frequency analysis. Select a product to see its top cross-sell pairings.</div>
+        </div>
+      </div>
+      <div class="home-stats">
+        <div class="home-stat"><div class="home-stat-v">$1.21M</div><div class="home-stat-l">Total Revenue</div></div>
+        <div class="home-stat"><div class="home-stat-v">11,428</div><div class="home-stat-l">Total Orders</div></div>
+        <div class="home-stat"><div class="home-stat-v">$106</div><div class="home-stat-l">Avg Order Value</div></div>
+        <div class="home-stat"><div class="home-stat-v">47.2%</div><div class="home-stat-l">Profit Margin</div></div>
+      </div>
+    </div>
+
+    <!-- ══ EXECUTIVE SUMMARY ══ -->
+    <div class="panel" id="panel-exec">
+      <div class="kpi-strip" style="grid-template-columns:repeat(3,1fr);">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Sales</div>
+          <div class="kpi-value" id="kpi-sales">$1.21M</div>
+          <div class="kpi-sub" id="kpi-state-label">All States</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Profit</div>
+          <div class="kpi-value" id="kpi-profit">$571K</div>
+          <div class="kpi-sub">After landed cost</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Profit %</div>
+          <div class="kpi-value" id="kpi-margin">47.2%</div>
+          <div class="kpi-sub">Gross margin</div>
+        </div>
+      </div>
+
+      <div class="exec-grid">
+        <!-- LEFT: Total Sales by Description and Category -->
+        <div class="exec-left">
+          <div class="chart-card" style="flex:1;min-height:0;">
+            <div class="chart-card-title">Total Sales by Description and Category</div>
+            <div class="chart-card-sub" id="descCatSub">All States · sorted by revenue</div>
+            <div id="catLegend" style="display:flex;flex-wrap:wrap;gap:6px 12px;margin-bottom:8px;flex-shrink:0;"></div>
+            <div class="chart-wrap"><canvas id="descCatChart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Treemap + Tile Map -->
+        <div class="exec-right">
+          <div class="chart-card" style="flex:1;min-height:0;">
+            <div class="chart-card-title">Profit % by Category</div>
+            <div class="chart-card-sub">Profit contribution — sized by revenue share</div>
+            <div id="catTreemap" style="flex:1;min-height:0;"></div>
+          </div>
+          <div class="chart-card" style="flex:1;min-height:0;">
+            <div class="chart-card-title">Total Sales by State</div>
+            <div class="chart-card-sub">Click to filter · darker = higher sales</div>
+            <div id="stateTileMap" style="flex:1;min-height:0;padding-top:4px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SHIPPING METRICS ══ -->
+    <div class="panel" id="panel-ship">
+      <div class="ship-kpis">
+        <div class="ship-kpi"><div class="ship-kpi-label">Shipping Baseline</div><div class="ship-kpi-value">$385,150</div></div>
+        <div class="ship-kpi"><div class="ship-kpi-label">What-If Cost</div><div class="ship-kpi-value" id="wi-cost">$327,378</div></div>
+        <div class="ship-kpi"><div class="ship-kpi-label">Potential Saving</div><div class="ship-kpi-value" id="wi-saving">$57,773</div></div>
+      </div>
+      <div class="whatif-box">
+        <div class="wi-title">What-If Bulk Quantity Multiplier</div>
+        <div class="wi-sub">Drag to model the impact of applying a bulk discount multiplier to shipping costs.</div>
+        <div class="slider-row">
+          <span class="sl-label">0.30×</span>
+          <input type="range" id="wiSlider" min="30" max="100" value="85" step="1" oninput="updateWhatIf()">
+          <span class="sl-label">1.00×</span>
+          <span class="sl-val" id="sliderVal">0.85×</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;flex:1;min-height:0;">
+        <div class="chart-card" style="flex:1;min-height:0;">
+          <div class="chart-card-title">Shipping Cost per 1,000 Miles</div>
+          <div class="chart-card-sub">By product — from dim_products</div>
+          <div class="chart-wrap"><canvas id="shipChart"></canvas></div>
+        </div>
+        <div class="chart-card" style="flex:1;min-height:0;overflow-y:auto;">
+          <div class="chart-card-title">Quantity Multiplier Table</div>
+          <div class="chart-card-sub">Step-function bulk discount tiers</div>
+          <table style="width:100%;border-collapse:collapse;font-family:'DM Mono',monospace;font-size:11px;margin-top:4px;">
+            <thead><tr>
+              <th style="text-align:left;padding:6px 10px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--grey-mid);border-bottom:1px solid var(--border);">Order Qty</th>
+              <th style="text-align:left;padding:6px 10px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--grey-mid);border-bottom:1px solid var(--border);">Multiplier</th>
+              <th style="text-align:left;padding:6px 10px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--grey-mid);border-bottom:1px solid var(--border);">Saving</th>
+            </tr></thead>
+            <tbody id="multiTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MARKET BASKET ══ -->
+    <div class="panel" id="panel-basket">
+      <div style="display:flex;gap:12px;flex-shrink:0;margin-bottom:12px;">
+        <div class="chart-card" style="flex:1;min-width:0;">
+          <div class="chart-card-title" id="basketChartTitle">Combination of Purchased Items</div>
+          <div class="chart-card-sub" id="basketChartSub">Select a product from the left panel</div>
+          <div style="height:230px;position:relative;"><canvas id="basketChart"></canvas></div>
+        </div>
+        <div class="chart-card" style="flex:1;min-width:0;overflow-y:auto;">
+          <div class="chart-card-title">Top Pairings — Detail</div>
+          <div class="chart-card-sub">Ranked by co-purchase count</div>
+          <table class="pair-table">
+            <thead><tr><th>#</th><th>Paired With</th><th>Count</th></tr></thead>
+            <tbody id="pairTableBody"><tr><td colspan="3" style="padding:16px 10px;color:var(--grey-mid);font-size:11px;">Select a product to view pairings.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="chart-card" style="flex:1;min-height:0;">
+        <div class="chart-card-title">Total Sales and Profit % by Description</div>
+        <div class="chart-card-sub">All products · bars = total revenue · line = profit %</div>
+        <div class="chart-wrap"><canvas id="salesProfitChart"></canvas></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+</div><!-- /dashboard -->
+
+<script>
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
+const DATA = {"sd":{"AL":{"s":6057,"o":82,"m":47.9,"cat":[2610,865,904,339,296,830,213],"mo":[106,565,305,522,193,372,749,663,499,595,191,1198,100],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":1651},{"d":"Templation Soft Cat Treats","s":830},{"d":"Earth Rated Dog Poop Bags","s":510},{"d":"Pet Grooming Brush","s":356},{"d":"Pet Hair Remover","s":310},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":297},{"d":"Canned Cat Food","s":275},{"d":"UltraSound Dog Barking Deterrent","s":267}]},"AK":{"s":3228,"o":32,"m":50.4,"cat":[1613,275,612,95,247,234,152],"mo":[122,77,294,545,173,243,379,102,155,225,541,374,0],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":1224},{"d":"Pet Grooming Brush","s":317},{"d":"Purina Pro Plan Adult Sensitive Skin","s":247},{"d":"Templation Soft Cat Treats","s":234},{"d":"Pet Odor Eliminator","s":152},{"d":"Pet Hair Remover","s":148},{"d":"Rechargeable Pet Nail Grinder","s":147},{"d":"NexGard Chew for Dogs","s":143}]},"AZ":{"s":13117,"o":155,"m":49.5,"cat":[6344,1638,2481,802,147,1411,294],"mo":[781,418,418,566,986,866,730,1215,1287,728,1837,2580,704],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":5261},{"d":"Templation Soft Cat Treats","s":1411},{"d":"Pet Grooming Brush","s":1306},{"d":"Earth Rated Dog Poop Bags","s":1069},{"d":"UltraSound Dog Barking Deterrent","s":802},{"d":"Rechargeable Pet Nail Grinder","s":653},{"d":"Pet Hair Remover","s":499},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":445}]},"AR":{"s":4261,"o":40,"m":51.1,"cat":[2460,496,314,149,50,12,781],"mo":[153,1062,71,610,62,359,102,156,216,450,364,656,0],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":1924},{"d":"Pet Odor Eliminator","s":781},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":267},{"d":"Rechargeable Pet Nail Grinder","s":249},{"d":"Memory Foam Pet Beds","s":204},{"d":"Earth Rated Dog Poop Bags","s":186},{"d":"UltraSound Dog Barking Deterrent","s":149},{"d":"Milk-Bone Dog Treats","s":97}]},"CA":{"s":171150,"o":1529,"m":46,"cat":[56977,38528,19811,7727,11736,18830,17540],"mo":[8718,8402,8217,9808,9361,17956,10548,13199,17731,14017,17233,29701,6259],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":27321},{"d":"Templation Soft Cat Treats","s":18830},{"d":"Pet Odor Eliminator","s":17540},{"d":"Memory Foam Pet Beds","s":13018},{"d":"Sheba Wet Cat Food","s":10273},{"d":"Dog and Puppy Pads","s":9572},{"d":"Earth Rated Dog Poop Bags","s":8259},{"d":"Cat Litter","s":7678}]},"CO":{"s":16605,"o":199,"m":47.5,"cat":[8802,3742,1590,547,849,161,916],"mo":[1056,852,574,856,1384,1948,1250,1798,768,1731,1703,2105,581],"top":[{"d":"Canned Cat Food","s":3823},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":2645},{"d":"Dog and Puppy Pads","s":1421},{"d":"Milk-Bone Dog Treats","s":1069},{"d":"Earth Rated Dog Poop Bags","s":1063},{"d":"Pet Odor Eliminator","s":916},{"d":"Pet Hair Remover","s":795},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":772}]},"CT":{"s":9832,"o":114,"m":47.3,"cat":[3233,4232,740,434,557,241,395],"mo":[173,862,341,590,753,1323,1290,362,294,867,916,2023,37],"top":[{"d":"Earth Rated Dog Poop Bags","s":2966},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":2024},{"d":"Dog and Puppy Pads","s":531},{"d":"Pet Hair Remover","s":499},{"d":"Purina Pro Plan Adult Sensitive Skin","s":488},{"d":"Memory Foam Pet Beds","s":470},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":432},{"d":"Pet Odor Eliminator","s":395}]},"DC":{"s":1586,"o":30,"m":43.4,"cat":[424,636,60,179,97,50,142],"mo":[123,145,77,65,101,173,107,291,0,18,113,198,177],"top":[{"d":"Memory Foam Pet Beds","s":327},{"d":"Dog and Puppy Pads","s":251},{"d":"NexGard Chew for Dogs","s":182},{"d":"Indoor Pet Camera","s":179},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":149},{"d":"Pet Odor Eliminator","s":142},{"d":"Purina Pro Plan Adult Sensitive Skin","s":97},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":77}]},"DE":{"s":9204,"o":38,"m":38.2,"cat":[2623,4748,621,59,929,0,223],"mo":[0,883,0,590,101,1537,855,107,1194,1883,866,1188,0],"top":[{"d":"Earth Rated Dog Poop Bags","s":2312},{"d":"Memory Foam Pet Beds","s":1804},{"d":"Milk-Bone Dog Treats","s":1422},{"d":"ProBiotic Supplements","s":832},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":591},{"d":"NexGard Chew for Dogs","s":580},{"d":"Dog and Puppy Pads","s":525},{"d":"Pet Grooming Brush","s":296}]},"FL":{"s":104931,"o":828,"m":48.8,"cat":[34973,30217,13132,5314,11316,3874,6104],"mo":[5274,6697,6518,5779,4961,7849,7693,9655,7326,9092,13331,16894,3862],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":19875},{"d":"Dog and Puppy Pads","s":11091},{"d":"Purina Pro Plan Adult Sensitive Skin","s":7759},{"d":"Memory Foam Pet Beds","s":7105},{"d":"Earth Rated Dog Poop Bags","s":6656},{"d":"Pet Odor Eliminator","s":6104},{"d":"Cat Litter","s":5365},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":5304}]},"GA":{"s":27301,"o":301,"m":46.3,"cat":[10541,8127,3110,1586,1653,445,1839],"mo":[974,2197,1579,2811,1388,2561,1598,2879,1968,3400,2253,2870,823],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":5524},{"d":"Dog and Puppy Pads","s":2389},{"d":"Earth Rated Dog Poop Bags","s":2352},{"d":"Memory Foam Pet Beds","s":2159},{"d":"Pet Odor Eliminator","s":1839},{"d":"NexGard Chew for Dogs","s":1574},{"d":"Pet Hair Remover","s":1341},{"d":"UltraSound Dog Barking Deterrent","s":1248}]},"HI":{"s":1376,"o":23,"m":51,"cat":[681,303,96,30,194,0,71],"mo":[39,120,0,23,102,131,214,105,183,0,351,108,0],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":383},{"d":"Purina Pro Plan Adult Sensitive Skin","s":194},{"d":"Dog and Puppy Pads","s":177},{"d":"Milk-Bone Dog Treats","s":172},{"d":"NexGard Chew for Dogs","s":86},{"d":"Earth Rated Dog Poop Bags","s":73},{"d":"Pet Odor Eliminator","s":71},{"d":"Cat Litter","s":53}]},"IA":{"s":6798,"o":71,"m":47.6,"cat":[2554,2113,1088,374,95,55,517],"mo":[304,181,0,666,334,1092,704,569,557,1039,304,533,516],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":1224},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":878},{"d":"Cat Litter","s":552},{"d":"Dog and Puppy Pads","s":552},{"d":"Pet Odor Eliminator","s":517},{"d":"Memory Foam Pet Beds","s":505},{"d":"Earth Rated Dog Poop Bags","s":504},{"d":"Pet Hair Remover","s":420}]},"ID":{"s":5360,"o":67,"m":48.2,"cat":[2399,1452,595,242,130,55,487],"mo":[449,163,18,354,87,578,432,562,872,354,743,675,73],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":842},{"d":"NexGard Chew for Dogs","s":668},{"d":"Earth Rated Dog Poop Bags","s":617},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":567},{"d":"Pet Odor Eliminator","s":487},{"d":"Dog and Puppy Pads","s":434},{"d":"Memory Foam Pet Beds","s":295},{"d":"Milk-Bone Dog Treats","s":271}]},"IL":{"s":59995,"o":525,"m":48,"cat":[17413,16827,7501,2598,3139,10405,2112],"mo":[1788,4256,3579,2805,2004,5875,3579,1954,6502,4098,11990,6769,4796],"top":[{"d":"Templation Soft Cat Treats","s":10405},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":9636},{"d":"Earth Rated Dog Poop Bags","s":6826},{"d":"Dog and Puppy Pads","s":5812},{"d":"Memory Foam Pet Beds","s":2801},{"d":"Milk-Bone Dog Treats","s":2781},{"d":"Pet Grooming Brush","s":2398},{"d":"Purina Pro Plan Adult Sensitive Skin","s":2335}]},"IN":{"s":24687,"o":260,"m":41.7,"cat":[6168,9296,2616,1232,4167,255,953],"mo":[2142,2064,1142,1966,981,3384,1704,2953,2620,1437,643,3149,502],"top":[{"d":"Memory Foam Pet Beds","s":3583},{"d":"ProBiotic Supplements","s":3158},{"d":"Earth Rated Dog Poop Bags","s":3066},{"d":"Milk-Bone Dog Treats","s":1916},{"d":"Cat Litter","s":1477},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":1224},{"d":"Pet Grooming Brush","s":1194},{"d":"Dog and Puppy Pads","s":1169}]},"KS":{"s":4810,"o":81,"m":47.6,"cat":[1458,1206,732,451,538,233,193],"mo":[282,100,322,420,10,654,440,209,283,602,525,751,213],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":886},{"d":"UltraSound Dog Barking Deterrent","s":416},{"d":"Memory Foam Pet Beds","s":402},{"d":"Dog and Puppy Pads","s":357},{"d":"Purina Pro Plan Adult Sensitive Skin","s":331},{"d":"Pet Hair Remover","s":324},{"d":"Milk-Bone Dog Treats","s":298},{"d":"Earth Rated Dog Poop Bags","s":287}]},"KY":{"s":9909,"o":98,"m":46.8,"cat":[2331,2591,2009,1100,384,420,1075],"mo":[192,158,470,457,421,733,1056,509,866,1955,1246,1653,194],"top":[{"d":"Earth Rated Dog Poop Bags","s":1626},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":1509},{"d":"UltraSound Dog Barking Deterrent","s":1100},{"d":"Pet Odor Eliminator","s":1075},{"d":"Rechargeable Pet Nail Grinder","s":1058},{"d":"Pet Hair Remover","s":750},{"d":"Templation Soft Cat Treats","s":420},{"d":"Cat Litter","s":373}]},"LA":{"s":23056,"o":215,"m":47.8,"cat":[10117,6459,3087,1898,625,200,669],"mo":[1279,575,1214,870,674,1959,2242,2374,1516,2657,2742,4082,874],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":7437},{"d":"Dog and Puppy Pads","s":3111},{"d":"Rechargeable Pet Nail Grinder","s":1785},{"d":"UltraSound Dog Barking Deterrent","s":1720},{"d":"Cat Litter","s":1535},{"d":"Memory Foam Pet Beds","s":1293},{"d":"Sheba Wet Cat Food","s":1077},{"d":"NexGard Chew for Dogs","s":877}]},"MA":{"s":87851,"o":358,"m":72.6,"cat":[24824,8136,5268,44539,1604,300,3181],"mo":[9232,2240,1444,3416,1437,4905,46128,3119,3003,2701,2468,5742,2016],"top":[{"d":"Indoor Pet Camera","s":42938},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":19482},{"d":"Pet Odor Eliminator","s":3181},{"d":"Memory Foam Pet Beds","s":2408},{"d":"Earth Rated Dog Poop Bags","s":2382},{"d":"Dog and Puppy Pads","s":2373},{"d":"Rechargeable Pet Nail Grinder","s":2085},{"d":"Pet Hair Remover","s":1827}]},"MD":{"s":17654,"o":189,"m":47.7,"cat":[7732,3843,2308,600,1517,352,1301],"mo":[568,819,817,1092,1959,2151,1267,1821,1951,1491,1872,1278,570],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":5504},{"d":"Pet Odor Eliminator","s":1301},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":1293},{"d":"Memory Foam Pet Beds","s":1290},{"d":"Earth Rated Dog Poop Bags","s":1212},{"d":"Purina Pro Plan Adult Sensitive Skin","s":1010},{"d":"Dog and Puppy Pads","s":916},{"d":"Rechargeable Pet Nail Grinder","s":729}]},"ME":{"s":3075,"o":37,"m":45.8,"cat":[845,1100,361,445,232,0,91],"mo":[159,28,0,247,304,241,320,398,466,35,486,392,0],"top":[{"d":"Dog and Puppy Pads","s":567},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":459},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":386},{"d":"UltraSound Dog Barking Deterrent","s":374},{"d":"Memory Foam Pet Beds","s":355},{"d":"Rechargeable Pet Nail Grinder","s":192},{"d":"Cat Litter","s":142},{"d":"ProBiotic Supplements","s":133}]},"MI":{"s":20046,"o":222,"m":44.7,"cat":[8623,5127,2331,939,2073,304,649],"mo":[1764,1887,592,2436,871,1568,1849,1084,1233,2489,1897,1997,379],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":4175},{"d":"Earth Rated Dog Poop Bags","s":2582},{"d":"Milk-Bone Dog Treats","s":1826},{"d":"ProBiotic Supplements","s":1667},{"d":"Canned Cat Food","s":1184},{"d":"Memory Foam Pet Beds","s":1157},{"d":"Pet Grooming Brush","s":1027},{"d":"Dog and Puppy Pads","s":962}]},"MN":{"s":14453,"o":140,"m":47.4,"cat":[7388,3592,1467,452,852,186,517],"mo":[1433,1046,661,1431,2071,936,738,729,558,627,840,3078,305],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":5954},{"d":"Cat Litter","s":1908},{"d":"Dog and Puppy Pads","s":800},{"d":"Purina Pro Plan Adult Sensitive Skin","s":630},{"d":"ChomChom Hair Remover","s":593},{"d":"Memory Foam Pet Beds","s":563},{"d":"Pet Odor Eliminator","s":517},{"d":"NexGard Chew for Dogs","s":415}]},"MO":{"s":14526,"o":159,"m":45.3,"cat":[6344,2721,1269,594,1910,975,713],"mo":[1126,843,107,1606,602,1556,1666,716,834,1416,1232,2127,695],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":3893},{"d":"NexGard Chew for Dogs","s":1328},{"d":"Memory Foam Pet Beds","s":996},{"d":"ProBiotic Supplements","s":983},{"d":"Templation Soft Cat Treats","s":975},{"d":"Purina Pro Plan Adult Sensitive Skin","s":927},{"d":"Dog and Puppy Pads","s":736},{"d":"Pet Odor Eliminator","s":713}]},"MS":{"s":2376,"o":42,"m":43.2,"cat":[1213,295,248,268,95,136,122],"mo":[290,79,0,180,81,56,280,245,199,512,119,291,43],"top":[{"d":"Canned Cat Food","s":615},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":306},{"d":"Indoor Pet Camera","s":179},{"d":"NexGard Chew for Dogs","s":143},{"d":"Templation Soft Cat Treats","s":136},{"d":"Pet Odor Eliminator","s":122},{"d":"Memory Foam Pet Beds","s":119},{"d":"Rechargeable Pet Nail Grinder","s":102}]},"MT":{"s":2120,"o":36,"m":53.3,"cat":[537,963,74,155,166,43,183],"mo":[124,147,167,45,237,255,120,252,245,0,247,263,18],"top":[{"d":"Dog and Puppy Pads","s":694},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":459},{"d":"Pet Odor Eliminator","s":183},{"d":"Cat Litter","s":159},{"d":"UltraSound Dog Barking Deterrent","s":119},{"d":"Purina Pro Plan Adult Sensitive Skin","s":97},{"d":"ProBiotic Supplements","s":69},{"d":"Memory Foam Pet Beds","s":59}]},"NC":{"s":29843,"o":254,"m":48.1,"cat":[10262,12114,1840,1141,2108,1238,1139],"mo":[2132,6055,769,1821,1434,2472,2892,1356,1912,1924,2561,3511,1004],"top":[{"d":"Dog and Puppy Pads","s":7567},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":5425},{"d":"Memory Foam Pet Beds","s":2231},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":1577},{"d":"Canned Cat Food","s":1554},{"d":"Templation Soft Cat Treats","s":1238},{"d":"Cat Litter","s":1160},{"d":"Earth Rated Dog Poop Bags","s":1156}]},"ND":{"s":15973,"o":40,"m":41,"cat":[6897,8730,161,59,35,0,91],"mo":[168,1000,1525,4238,362,1001,1236,1026,1937,472,1517,236,1257],"top":[{"d":"Earth Rated Dog Poop Bags","s":8126},{"d":"Milk-Bone Dog Treats","s":5763},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":733},{"d":"Sheba Wet Cat Food","s":267},{"d":"Dog and Puppy Pads","s":254},{"d":"Cat Litter","s":231},{"d":"Memory Foam Pet Beds","s":119},{"d":"Pet Grooming Brush","s":99}]},"NE":{"s":4371,"o":48,"m":48.6,"cat":[1272,1426,303,208,257,358,548],"mo":[192,200,659,333,154,410,310,60,377,94,683,720,179],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":689},{"d":"Dog and Puppy Pads","s":680},{"d":"Pet Odor Eliminator","s":548},{"d":"Templation Soft Cat Treats","s":358},{"d":"Memory Foam Pet Beds","s":327},{"d":"Earth Rated Dog Poop Bags","s":277},{"d":"ProBiotic Supplements","s":257},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":238}]},"NH":{"s":2158,"o":37,"m":47.6,"cat":[1087,557,280,65,0,68,101],"mo":[107,17,105,318,258,429,107,36,97,194,115,286,92],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":733},{"d":"Memory Foam Pet Beds","s":267},{"d":"Dog and Puppy Pads","s":237},{"d":"NexGard Chew for Dogs","s":162},{"d":"Rechargeable Pet Nail Grinder","s":147},{"d":"Pet Odor Eliminator","s":101},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":89},{"d":"Pet Grooming Brush","s":69}]},"NJ":{"s":64760,"o":405,"m":40.8,"cat":[18189,21730,4767,3672,10946,3944,1511],"mo":[3846,3821,4616,4322,1778,5069,5827,6071,8118,4093,7386,8495,1317],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":10122},{"d":"ProBiotic Supplements","s":9394},{"d":"Dog and Puppy Pads","s":7252},{"d":"Memory Foam Pet Beds","s":6936},{"d":"Earth Rated Dog Poop Bags","s":5727},{"d":"Templation Soft Cat Treats","s":3944},{"d":"UltraSound Dog Barking Deterrent","s":3321},{"d":"Milk-Bone Dog Treats","s":3314}]},"NM":{"s":11880,"o":91,"m":43.8,"cat":[3938,5863,587,636,69,381,407],"mo":[1007,35,164,675,622,379,1038,348,999,1572,3430,1388,222],"top":[{"d":"Earth Rated Dog Poop Bags","s":4492},{"d":"Milk-Bone Dog Treats","s":2594},{"d":"Memory Foam Pet Beds","s":762},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":656},{"d":"UltraSound Dog Barking Deterrent","s":564},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":564},{"d":"Pet Odor Eliminator","s":407},{"d":"Dog and Puppy Pads","s":396}]},"NV":{"s":28174,"o":103,"m":43.3,"cat":[20120,3756,2853,418,161,75,791],"mo":[5354,147,2225,219,825,2296,2231,992,2730,1845,1048,4770,3493],"top":[{"d":"Canned Cat Food","s":17271},{"d":"Earth Rated Dog Poop Bags","s":2315},{"d":"Pet Hair Remover","s":2242},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":1433},{"d":"Milk-Bone Dog Treats","s":991},{"d":"Pet Odor Eliminator","s":791},{"d":"Memory Foam Pet Beds","s":770},{"d":"Dog and Puppy Pads","s":564}]},"NY":{"s":63113,"o":683,"m":42.6,"cat":[14376,20171,6699,3234,14725,641,3267],"mo":[3315,4229,2401,3623,1973,5489,4254,6046,3656,4752,6989,13004,3381],"top":[{"d":"ProBiotic Supplements","s":12605},{"d":"Cat Litter","s":6730},{"d":"Dog and Puppy Pads","s":5451},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":5181},{"d":"Memory Foam Pet Beds","s":4465},{"d":"Earth Rated Dog Poop Bags","s":3525},{"d":"Pet Odor Eliminator","s":3267},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":3075}]},"OH":{"s":29137,"o":272,"m":46.5,"cat":[8985,7249,6074,1555,3805,636,831],"mo":[1058,613,1123,2081,2724,3282,2413,2656,1188,2786,4627,3522,1066],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":6596},{"d":"Purina Pro Plan Adult Sensitive Skin","s":2904},{"d":"Pet Hair Remover","s":2466},{"d":"Rechargeable Pet Nail Grinder","s":2258},{"d":"Dog and Puppy Pads","s":2119},{"d":"Memory Foam Pet Beds","s":1831},{"d":"Cat Litter","s":1749},{"d":"Earth Rated Dog Poop Bags","s":1550}]},"OK":{"s":7137,"o":116,"m":47.6,"cat":[2504,1956,1034,511,936,12,183],"mo":[455,710,257,840,188,559,238,955,588,365,398,1412,170],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":1115},{"d":"Dog and Puppy Pads","s":903},{"d":"Purina Pro Plan Adult Sensitive Skin","s":664},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":475},{"d":"Earth Rated Dog Poop Bags","s":466},{"d":"Milk-Bone Dog Treats","s":456},{"d":"Memory Foam Pet Beds","s":445},{"d":"UltraSound Dog Barking Deterrent","s":386}]},"OR":{"s":11420,"o":177,"m":46,"cat":[4220,2208,1847,1163,1085,75,821],"mo":[467,802,379,981,788,2375,982,1245,578,403,398,1557,463],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":2242},{"d":"Purina Pro Plan Adult Sensitive Skin","s":1050},{"d":"UltraSound Dog Barking Deterrent","s":985},{"d":"Pet Hair Remover","s":892},{"d":"Pet Odor Eliminator","s":821},{"d":"Memory Foam Pet Beds","s":802},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":640},{"d":"Milk-Bone Dog Treats","s":613}]},"PA":{"s":38052,"o":451,"m":48.2,"cat":[10540,14759,4825,1822,3178,1479,1450],"mo":[1811,1119,1256,2506,3076,3590,3972,3018,2111,3541,2747,7815,1490],"top":[{"d":"Earth Rated Dog Poop Bags","s":4923},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":4790},{"d":"Memory Foam Pet Beds","s":4672},{"d":"Dog and Puppy Pads","s":4171},{"d":"Purina Pro Plan Adult Sensitive Skin","s":2833},{"d":"Pet Hair Remover","s":1643},{"d":"Sheba Wet Cat Food","s":1565},{"d":"UltraSound Dog Barking Deterrent","s":1536}]},"RI":{"s":1379,"o":21,"m":53.5,"cat":[670,171,365,30,0,12,132],"mo":[142,0,77,0,105,153,232,114,65,141,0,215,137],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":459},{"d":"Pet Hair Remover","s":150},{"d":"Pet Grooming Brush","s":139},{"d":"Pet Odor Eliminator","s":132},{"d":"Canned Cat Food","s":126},{"d":"Earth Rated Dog Poop Bags","s":100},{"d":"Dog and Puppy Pads","s":71},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":59}]},"SC":{"s":7231,"o":121,"m":50,"cat":[3359,1904,678,499,229,298,264],"mo":[1448,321,616,488,177,436,423,346,154,579,848,1110,286],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":2526},{"d":"Dog and Puppy Pads","s":865},{"d":"Memory Foam Pet Beds","s":445},{"d":"ChomChom Hair Remover","s":409},{"d":"Sheba Wet Cat Food","s":406},{"d":"Cat Litter","s":389},{"d":"UltraSound Dog Barking Deterrent","s":356},{"d":"Templation Soft Cat Treats","s":298}]},"SD":{"s":2253,"o":44,"m":49.5,"cat":[667,438,316,167,266,125,274],"mo":[96,198,114,142,119,48,266,179,124,98,65,538,267],"top":[{"d":"NexGard Chew for Dogs","s":372},{"d":"Pet Odor Eliminator","s":274},{"d":"Dog and Puppy Pads","s":266},{"d":"Purina Pro Plan Adult Sensitive Skin","s":232},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":230},{"d":"ChomChom Hair Remover","s":214},{"d":"Templation Soft Cat Treats","s":125},{"d":"Indoor Pet Camera","s":107}]},"TN":{"s":12703,"o":148,"m":44.6,"cat":[4949,2743,1788,1996,402,439,385],"mo":[751,655,292,761,371,493,803,2004,773,803,1130,3021,843],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":2593},{"d":"UltraSound Dog Barking Deterrent","s":1960},{"d":"Rechargeable Pet Nail Grinder","s":1209},{"d":"Canned Cat Food","s":971},{"d":"Earth Rated Dog Poop Bags","s":934},{"d":"Memory Foam Pet Beds","s":800},{"d":"Dog and Puppy Pads","s":708},{"d":"NexGard Chew for Dogs","s":687}]},"TX":{"s":96805,"o":667,"m":47.7,"cat":[20758,42010,15143,8274,4391,1584,4646],"mo":[4245,5742,4320,4695,3229,9927,6948,9339,10627,12138,6526,15906,3163],"top":[{"d":"Dog and Puppy Pads","s":20364},{"d":"Memory Foam Pet Beds","s":10485},{"d":"UltraSound Dog Barking Deterrent","s":7560},{"d":"Earth Rated Dog Poop Bags","s":7081},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":6702},{"d":"Pet Hair Remover","s":6520},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":6364},{"d":"Pet Odor Eliminator","s":4646}]},"UT":{"s":8354,"o":99,"m":47.5,"cat":[2349,2461,1447,482,1379,62,172],"mo":[464,295,71,575,166,639,857,861,812,494,1433,1152,534],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":1345},{"d":"Purina Pro Plan Adult Sensitive Skin","s":1216},{"d":"Memory Foam Pet Beds","s":1099},{"d":"Earth Rated Dog Poop Bags","s":760},{"d":"ChomChom Hair Remover","s":649},{"d":"Cat Litter","s":461},{"d":"Pet Grooming Brush","s":396},{"d":"Indoor Pet Camera","s":393}]},"VA":{"s":38679,"o":340,"m":42.7,"cat":[24539,4207,1190,1955,5566,736,487],"mo":[4205,1908,1504,3096,3008,2618,3604,3832,274,2719,4475,4192,3244],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":11712},{"d":"Sheba Wet Cat Food","s":9233},{"d":"ProBiotic Supplements","s":4031},{"d":"Purina Pro Plan Adult Sensitive Skin","s":1535},{"d":"Dog and Puppy Pads","s":1530},{"d":"Memory Foam Pet Beds","s":1494},{"d":"UltraSound Dog Barking Deterrent","s":1337},{"d":"Canned Cat Food","s":1286}]},"VT":{"s":311,"o":9,"m":49.4,"cat":[111,126,74,0,0,0,0],"mo":[0,18,44,33,22,0,129,0,47,0,0,0,18],"top":[{"d":"Earth Rated Dog Poop Bags","s":61},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":59},{"d":"Pet Grooming Brush","s":50},{"d":"Milk-Bone Dog Treats","s":36},{"d":"Memory Foam Pet Beds","s":30},{"d":"Pet Hair Remover","s":25},{"d":"Dog and Puppy Pads","s":18},{"d":"Cat Litter","s":18}]},"WA":{"s":37695,"o":248,"m":20.6,"cat":[20921,5385,2640,1162,6643,407,537],"mo":[6878,510,1815,2007,1210,2758,4897,2245,829,5742,1631,5301,1871],"top":[{"d":"NexGard Chew for Dogs","s":16178},{"d":"Purina Pro Plan Adult Sensitive Skin","s":6440},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":2396},{"d":"Memory Foam Pet Beds","s":1958},{"d":"Dog and Puppy Pads","s":1868},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":1423},{"d":"Earth Rated Dog Poop Bags","s":1010},{"d":"Rechargeable Pet Nail Grinder","s":1005}]},"WI":{"s":20203,"o":228,"m":49.3,"cat":[4597,7588,2505,1385,1163,98,2868],"mo":[601,910,1246,1329,1188,3342,1009,2151,1267,3211,1516,1595,837],"top":[{"d":"Dog and Puppy Pads","s":3195},{"d":"Pet Odor Eliminator","s":2868},{"d":"Memory Foam Pet Beds","s":2756},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":2689},{"d":"Earth Rated Dog Poop Bags","s":1246},{"d":"Pet Grooming Brush","s":1008},{"d":"UltraSound Dog Barking Deterrent","s":921},{"d":"Purina Pro Plan Adult Sensitive Skin","s":873}]},"WV":{"s":7707,"o":51,"m":47.1,"cat":[5788,335,595,333,163,209,284],"mo":[728,719,668,519,143,705,258,496,804,202,1064,611,791],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":5353},{"d":"UltraSound Dog Barking Deterrent","s":297},{"d":"Pet Odor Eliminator","s":284},{"d":"Purina ONE SmartBlend Natural Adult Chicken 10lb","s":267},{"d":"ChomChom Hair Remover","s":214},{"d":"Templation Soft Cat Treats","s":209},{"d":"Rechargeable Pet Nail Grinder","s":195},{"d":"ProBiotic Supplements","s":163}]},"WY":{"s":814,"o":17,"m":50.5,"cat":[299,235,250,30,0,0,0],"mo":[0,65,29,47,40,10,160,65,0,47,74,165,111],"top":[{"d":"Milk-Bone Dog Treats","s":135},{"d":"Earth Rated Dog Poop Bags","s":112},{"d":"Pet Hair Remover","s":100},{"d":"Pet Grooming Brush","s":99},{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":77},{"d":"Dog and Puppy Pads","s":71},{"d":"Cat Litter","s":53},{"d":"NexGard Chew for Dogs","s":47}]},"ALL":{"s":1205519,"o":11428,"m":47.2,"cat":[422625,327651,132687,103941,103108,52885,62622],"mo":[78120,66951,55201,76406,55600,109739,133125,93468,93390,102632,117714,173198,49975],"top":[{"d":"Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb","s":207284},{"d":"Dog and Puppy Pads","s":104388},{"d":"Earth Rated Dog Poop Bags","s":91502},{"d":"Memory Foam Pet Beds","s":85205},{"d":"Pet Odor Eliminator","s":62622},{"d":"Indoor Pet Camera","s":54356},{"d":"Templation Soft Cat Treats","s":52885},{"d":"ProBiotic Supplements","s":51807}]}},"bk":{"Pet Grooming Brush":[{"d":"Earth Rated Dog Poop Bags","c":426},{"d":"Pet Hair Remover","c":259},{"d":"Milk-Bone Dog Treats","c":239},{"d":"Dog and Puppy Pads","c":229},{"d":"Memory Foam Pet Beds","c":169},{"d":"Purina ONE SmartBlend 10lb","c":155},{"d":"Sheba Wet Cat Food","c":150},{"d":"Taste of the Wild 40lb","c":134},{"d":"UltraSound Barking Deterrent","c":134},{"d":"Pet Odor Eliminator","c":131}],"Canned Cat Food":[{"d":"Dog and Puppy Pads","c":41},{"d":"Taste of the Wild 40lb","c":37},{"d":"Sheba Wet Cat Food","c":36},{"d":"Memory Foam Pet Beds","c":34},{"d":"ProBiotic Supplements","c":31},{"d":"Earth Rated Dog Poop Bags","c":30},{"d":"Templation Cat Treats","c":27},{"d":"UltraSound Barking Deterrent","c":25},{"d":"Purina Pro Plan","c":22},{"d":"Rechargeable Pet Nail Grinder","c":21}],"Cat Litter":[{"d":"Sheba Wet Cat Food","c":126},{"d":"Dog and Puppy Pads","c":115},{"d":"Templation Cat Treats","c":104},{"d":"ChomChom Hair Remover","c":101},{"d":"Pet Hair Remover","c":101},{"d":"Earth Rated Dog Poop Bags","c":97},{"d":"Taste of the Wild 40lb","c":92},{"d":"Pet Grooming Brush","c":87},{"d":"Pet Odor Eliminator","c":86},{"d":"UltraSound Barking Deterrent","c":75}],"ChomChom Hair Remover":[{"d":"Cat Litter","c":101},{"d":"Sheba Wet Cat Food","c":66},{"d":"Taste of the Wild 40lb","c":64},{"d":"Dog and Puppy Pads","c":63},{"d":"Purina Pro Plan","c":57},{"d":"Earth Rated Dog Poop Bags","c":51},{"d":"Pet Odor Eliminator","c":45},{"d":"Pet Grooming Brush","c":42},{"d":"UltraSound Barking Deterrent","c":42},{"d":"Pet Hair Remover","c":42}],"Sheba Wet Cat Food":[{"d":"Dog and Puppy Pads","c":193},{"d":"Earth Rated Dog Poop Bags","c":170},{"d":"Pet Grooming Brush","c":150},{"d":"Cat Litter","c":126},{"d":"Taste of the Wild 40lb","c":121},{"d":"Pet Hair Remover","c":115},{"d":"Memory Foam Pet Beds","c":111},{"d":"UltraSound Barking Deterrent","c":110},{"d":"Templation Cat Treats","c":98},{"d":"Rechargeable Pet Nail Grinder","c":85}],"Milk-Bone Dog Treats":[{"d":"Earth Rated Dog Poop Bags","c":547},{"d":"Pet Hair Remover","c":266},{"d":"Pet Grooming Brush","c":239},{"d":"Dog and Puppy Pads","c":137},{"d":"Memory Foam Pet Beds","c":111},{"d":"Purina ONE SmartBlend 10lb","c":93},{"d":"Sheba Wet Cat Food","c":76},{"d":"Taste of the Wild 40lb","c":76},{"d":"UltraSound Barking Deterrent","c":66},{"d":"Pet Odor Eliminator","c":64}],"Taste of the Wild 40lb":[{"d":"Dog and Puppy Pads","c":236},{"d":"Pet Odor Eliminator","c":232},{"d":"Memory Foam Pet Beds","c":230},{"d":"UltraSound Barking Deterrent","c":219},{"d":"Rechargeable Pet Nail Grinder","c":177},{"d":"Earth Rated Dog Poop Bags","c":160},{"d":"Pet Grooming Brush","c":134},{"d":"Purina ONE SmartBlend 10lb","c":122},{"d":"Sheba Wet Cat Food","c":121},{"d":"Pet Hair Remover","c":105}],"Indoor Pet Camera":[{"d":"Memory Foam Pet Beds","c":44},{"d":"Taste of the Wild 40lb","c":40},{"d":"Pet Grooming Brush","c":37},{"d":"Rechargeable Pet Nail Grinder","c":29},{"d":"Dog and Puppy Pads","c":27},{"d":"UltraSound Barking Deterrent","c":26},{"d":"Sheba Wet Cat Food","c":25},{"d":"Earth Rated Dog Poop Bags","c":24},{"d":"Pet Odor Eliminator","c":20},{"d":"Purina ONE SmartBlend 10lb","c":16}],"UltraSound Barking Deterrent":[{"d":"Rechargeable Pet Nail Grinder","c":243},{"d":"Taste of the Wild 40lb","c":219},{"d":"Dog and Puppy Pads","c":198},{"d":"Memory Foam Pet Beds","c":169},{"d":"Earth Rated Dog Poop Bags","c":149},{"d":"Pet Grooming Brush","c":134},{"d":"Pet Odor Eliminator","c":130},{"d":"Purina ONE SmartBlend 10lb","c":125},{"d":"Sheba Wet Cat Food","c":110},{"d":"Pet Hair Remover","c":95}],"Rechargeable Pet Nail Grinder":[{"d":"UltraSound Barking Deterrent","c":243},{"d":"Taste of the Wild 40lb","c":177},{"d":"Dog and Puppy Pads","c":125},{"d":"Memory Foam Pet Beds","c":114},{"d":"Earth Rated Dog Poop Bags","c":110},{"d":"Pet Grooming Brush","c":107},{"d":"Pet Odor Eliminator","c":99},{"d":"Purina ONE SmartBlend 10lb","c":88},{"d":"Sheba Wet Cat Food","c":85},{"d":"Cat Litter","c":75}],"Templation Cat Treats":[{"d":"Cat Litter","c":104},{"d":"Sheba Wet Cat Food","c":98},{"d":"Taste of the Wild 40lb","c":81},{"d":"Pet Hair Remover","c":79},{"d":"Earth Rated Dog Poop Bags","c":70},{"d":"Pet Odor Eliminator","c":68},{"d":"Dog and Puppy Pads","c":68},{"d":"Pet Grooming Brush","c":60},{"d":"Purina ONE SmartBlend 10lb","c":55},{"d":"Purina Pro Plan","c":48}],"Pet Hair Remover":[{"d":"Earth Rated Dog Poop Bags","c":469},{"d":"Milk-Bone Dog Treats","c":266},{"d":"Pet Grooming Brush","c":259},{"d":"Purina ONE SmartBlend 10lb","c":205},{"d":"Memory Foam Pet Beds","c":142},{"d":"Dog and Puppy Pads","c":135},{"d":"Sheba Wet Cat Food","c":115},{"d":"Pet Odor Eliminator","c":110},{"d":"Taste of the Wild 40lb","c":105},{"d":"Cat Litter","c":101}],"Purina Pro Plan":[{"d":"Taste of the Wild 40lb","c":97},{"d":"Pet Hair Remover","c":92},{"d":"Dog and Puppy Pads","c":86},{"d":"Earth Rated Dog Poop Bags","c":86},{"d":"Purina ONE SmartBlend 10lb","c":82},{"d":"Memory Foam Pet Beds","c":72},{"d":"Sheba Wet Cat Food","c":69},{"d":"Pet Grooming Brush","c":63},{"d":"Pet Odor Eliminator","c":62},{"d":"Cat Litter","c":60}],"Purina ONE SmartBlend 10lb":[{"d":"Memory Foam Pet Beds","c":390},{"d":"Pet Hair Remover","c":205},{"d":"Dog and Puppy Pads","c":171},{"d":"Earth Rated Dog Poop Bags","c":160},{"d":"Pet Odor Eliminator","c":159},{"d":"Pet Grooming Brush","c":155},{"d":"UltraSound Barking Deterrent","c":125},{"d":"Taste of the Wild 40lb","c":122},{"d":"Milk-Bone Dog Treats","c":93},{"d":"Rechargeable Pet Nail Grinder","c":88}],"Memory Foam Pet Beds":[{"d":"Purina ONE SmartBlend 10lb","c":390},{"d":"Dog and Puppy Pads","c":280},{"d":"Taste of the Wild 40lb","c":230},{"d":"Pet Odor Eliminator","c":194},{"d":"Earth Rated Dog Poop Bags","c":185},{"d":"Pet Grooming Brush","c":169},{"d":"UltraSound Barking Deterrent","c":169},{"d":"Pet Hair Remover","c":142},{"d":"Rechargeable Pet Nail Grinder","c":114},{"d":"Sheba Wet Cat Food","c":111}],"ProBiotic Supplements":[{"d":"Dog and Puppy Pads","c":87},{"d":"Pet Grooming Brush","c":76},{"d":"Earth Rated Dog Poop Bags","c":71},{"d":"Memory Foam Pet Beds","c":67},{"d":"Sheba Wet Cat Food","c":64},{"d":"Taste of the Wild 40lb","c":59},{"d":"Cat Litter","c":51},{"d":"UltraSound Barking Deterrent","c":50},{"d":"Purina ONE SmartBlend 10lb","c":45},{"d":"Pet Odor Eliminator","c":43}],"NexGard Chew for Dogs":[{"d":"Dog and Puppy Pads","c":166},{"d":"Pet Odor Eliminator","c":103},{"d":"Memory Foam Pet Beds","c":92},{"d":"Taste of the Wild 40lb","c":89},{"d":"UltraSound Barking Deterrent","c":67},{"d":"Purina ONE SmartBlend 10lb","c":61},{"d":"Earth Rated Dog Poop Bags","c":58},{"d":"Pet Grooming Brush","c":49},{"d":"Sheba Wet Cat Food","c":44},{"d":"Pet Hair Remover","c":43}],"Pet Odor Eliminator":[{"d":"Dog and Puppy Pads","c":272},{"d":"Taste of the Wild 40lb","c":232},{"d":"Memory Foam Pet Beds","c":194},{"d":"Purina ONE SmartBlend 10lb","c":159},{"d":"Pet Grooming Brush","c":131},{"d":"UltraSound Barking Deterrent","c":130},{"d":"Earth Rated Dog Poop Bags","c":119},{"d":"Pet Hair Remover","c":110},{"d":"NexGard Chew for Dogs","c":103},{"d":"Rechargeable Pet Nail Grinder","c":99}],"Dog and Puppy Pads":[{"d":"Memory Foam Pet Beds","c":280},{"d":"Pet Odor Eliminator","c":272},{"d":"Earth Rated Dog Poop Bags","c":253},{"d":"Taste of the Wild 40lb","c":236},{"d":"Pet Grooming Brush","c":229},{"d":"UltraSound Barking Deterrent","c":198},{"d":"Sheba Wet Cat Food","c":193},{"d":"Purina ONE SmartBlend 10lb","c":171},{"d":"NexGard Chew for Dogs","c":166},{"d":"Milk-Bone Dog Treats","c":137}],"Earth Rated Dog Poop Bags":[{"d":"Milk-Bone Dog Treats","c":547},{"d":"Pet Hair Remover","c":469},{"d":"Pet Grooming Brush","c":426},{"d":"Dog and Puppy Pads","c":253},{"d":"Memory Foam Pet Beds","c":185},{"d":"Sheba Wet Cat Food","c":170},{"d":"Taste of the Wild 40lb","c":160},{"d":"Purina ONE SmartBlend 10lb","c":160},{"d":"UltraSound Barking Deterrent","c":149},{"d":"Pet Odor Eliminator","c":119}]},"sl":["AK","AL","AR","AZ","CA","CO","CT","DC","DE","FL","GA","HI","IA","ID","IL","IN","KS","KY","LA","MA","MD","ME","MI","MN","MO","MS","MT","NC","ND","NE","NH","NJ","NM","NV","NY","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VA","VT","WA","WI","WV","WY"],"ds":["Canned Cat Food","Cat Litter","ChomChom Hair Remover","Dog and Puppy Pads","Earth Rated Dog Poop Bags","Indoor Pet Camera","Memory Foam Pet Beds","Milk-Bone Dog Treats","NexGard Chew for Dogs","Pet Grooming Brush","Pet Hair Remover","Pet Odor Eliminator","ProBiotic Supplements","Purina ONE SmartBlend 10lb","Purina Pro Plan","Rechargeable Pet Nail Grinder","Sheba Wet Cat Food","Taste of the Wild 40lb","Templation Cat Treats","UltraSound Barking Deterrent"],"mo":["Dec 20","Jan 21","Feb 21","Mar 21","Apr 21","May 21","Jun 21","Jul 21","Aug 21","Sep 21","Oct 21","Nov 21","Dec 21"],"tc":["Food","Disposables","Grooming","Electronics","Supplements","Pet Food","Cleaning"]};
+
+// ─────────────────────────────────────────────
+// PRODUCT REFERENCE DATA
+// ─────────────────────────────────────────────
+// All 20 products: global sales, category, profit margin
+const PROD_ALL = [
+  {d:'Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb', s:207284, c:'Food',       m:50.0},
+  {d:'Dog and Puppy Pads',                                          s:104388, c:'Disposables', m:60.8},
+  {d:'Earth Rated Dog Poop Bags',                                   s:91502,  c:'Disposables', m:58.3},
+  {d:'Memory Foam Pet Beds',                                        s:85205,  c:'Disposables', m:60.0},
+  {d:'Pet Odor Eliminator',                                         s:62622,  c:'Cleaning',    m:60.5},
+  {d:'NexGard Chew for Dogs',                                       s:56841,  c:'Food',        m:45.5},
+  {d:'Indoor Pet Camera',                                           s:54356,  c:'Electronics', m:60.0},
+  {d:'Templation Soft Cat Treats',                                  s:52885,  c:'Pet Food',    m:50.0},
+  {d:'ProBiotic Supplements',                                       s:51807,  c:'Supplements', m:51.1},
+  {d:'Purina Pro Plan Adult Sensitive Skin',                        s:51301,  c:'Supplements', m:43.0},
+  {d:'Purina ONE SmartBlend Natural Adult Chicken 10lb',            s:50000,  c:'Food',        m:48.6},
+  {d:'UltraSound Dog Barking Deterrent',                            s:49585,  c:'Electronics', m:42.9},
+  {d:'Cat Litter',                                                  s:46556,  c:'Disposables', m:41.2},
+  {d:'Pet Hair Remover',                                            s:45000,  c:'Grooming',    m:60.0},
+  {d:'Milk-Bone Dog Treats',                                        s:40500,  c:'Food',        m:31.6},
+  {d:'Sheba Wet Cat Food',                                          s:35000,  c:'Food',        m:58.3},
+  {d:'Pet Grooming Brush',                                          s:35000,  c:'Grooming',    m:59.6},
+  {d:'Rechargeable Pet Nail Grinder',                               s:35000,  c:'Grooming',    m:41.2},
+  {d:'Canned Cat Food',                                             s:33000,  c:'Food',        m:45.5},
+  {d:'ChomChom Pet Hair Remover - Reusable Cat and Dog Hair Remover', s:17687, c:'Grooming',   m:61.4}
+];
+
+// Short labels for basket bottom chart
+const PROD_SHORT = {
+  'Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb': 'Taste Wild',
+  'Dog and Puppy Pads': 'Dog Pads',
+  'Earth Rated Dog Poop Bags': 'Poop Bags',
+  'Memory Foam Pet Beds': 'Mem. Foam',
+  'Pet Odor Eliminator': 'Odor Elim.',
+  'NexGard Chew for Dogs': 'NexGard',
+  'Indoor Pet Camera': 'Pet Camera',
+  'Templation Soft Cat Treats': 'Templation',
+  'ProBiotic Supplements': 'ProBiotic',
+  'Purina Pro Plan Adult Sensitive Skin': 'Purina Pro',
+  'Purina ONE SmartBlend Natural Adult Chicken 10lb': 'Purina ONE',
+  'UltraSound Dog Barking Deterrent': 'UltraSound',
+  'Cat Litter': 'Cat Litter',
+  'Pet Hair Remover': 'Hair Rmvr',
+  'Milk-Bone Dog Treats': 'Milk-Bone',
+  'Sheba Wet Cat Food': 'Sheba',
+  'Pet Grooming Brush': 'Grm. Brush',
+  'Rechargeable Pet Nail Grinder': 'Nail Grnd.',
+  'Canned Cat Food': 'Canned Cat',
+  'ChomChom Pet Hair Remover - Reusable Cat and Dog Hair Remover': 'ChomChom'
+};
+
+// Product → category lookup (handles both full and short name variants from top arrays)
+const PROD_CAT = {};
+PROD_ALL.forEach(p => { PROD_CAT[p.d] = p.c; });
+// Additional aliases used in state top arrays
+Object.assign(PROD_CAT, {
+  'Taste of the Wild 40lb': 'Food',
+  'Memory Foam Pet Beds for Small, Medium, and Large Dogs and Cats': 'Disposables',
+  'Templation Cat Treats': 'Pet Food',
+  'Litter Slide Multi-Cat Scented Clumping Clay Cat Litter': 'Disposables',
+  'Milk-Bone Dog Treats': 'Food',
+  'UltraSound Barking Deterrent': 'Electronics',
+  'ChomChom Hair Remover': 'Grooming',
+  'Purina Pro Plan': 'Supplements',
+  'Purina ONE SmartBlend 10lb': 'Food',
+  'Sheba Wet Cat Food': 'Food',
+  'Sheba Perfect Portions Paté Wet Cat Food': 'Food'
+});
+
+// Category colours
+const CAT_COLOR = {
+  'Food':        '#3dd6c8',
+  'Disposables': '#4da6ff',
+  'Grooming':    '#c084fc',
+  'Electronics': '#fb923c',
+  'Supplements': '#4ade80',
+  'Pet Food':    '#f472b6',
+  'Cleaning':    '#60a5fa'
+};
+const CAT_COLOR_DIM = {
+  'Food':        'rgba(61,214,200,0.18)',
+  'Disposables': 'rgba(77,166,255,0.18)',
+  'Grooming':    'rgba(192,132,252,0.18)',
+  'Electronics': 'rgba(251,146,60,0.18)',
+  'Supplements': 'rgba(74,222,128,0.18)',
+  'Pet Food':    'rgba(244,114,182,0.18)',
+  'Cleaning':    'rgba(96,165,250,0.18)'
+};
+
+// US state tile-map grid positions [row, col] (11 cols × 9 rows)
+const TILE_POS = {
+  ME:[0,10],
+  VT:[1,8], NH:[1,9],
+  WA:[2,0], MT:[2,1], ND:[2,2], MN:[2,3], WI:[2,4], MI:[2,5], NY:[2,7], MA:[2,8], CT:[2,9], RI:[2,10],
+  OR:[3,0], ID:[3,1], SD:[3,2], NE:[3,3], IA:[3,4], IL:[3,5], IN:[3,6], OH:[3,7], PA:[3,8], NJ:[3,9], DE:[3,10],
+  CA:[4,0], NV:[4,1], WY:[4,2], CO:[4,3], KS:[4,4], MO:[4,5], KY:[4,6], WV:[4,7], VA:[4,8], MD:[4,9], DC:[4,10],
+  AZ:[5,1], UT:[5,2], NM:[5,3], OK:[5,4], AR:[5,5], TN:[5,6], NC:[5,7], SC:[5,8],
+  TX:[6,3], LA:[6,4], MS:[6,5], AL:[6,6], GA:[6,7],
+  FL:[7,7],
+  AK:[8,0], HI:[8,2]
+};
+
+// ─────────────────────────────────────────────
+// CHART.JS DEFAULTS
+// ─────────────────────────────────────────────
+const TEAL='#3dd6c8', TEAL_DIM='rgba(61,214,200,0.14)', GREY='#888';
+Chart.defaults.color = GREY;
+Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+Chart.defaults.font.family = "'Barlow',sans-serif";
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let selectedState = 'ALL', selectedDesc = null, currentPage = 'home';
+let descCatChart = null, shipChart = null, basketChart = null, salesProfitChart = null;
+let usMapLoaded = false;
+
+// FIPS code → state abbreviation
+const FIPS_STATE = {
+  '01':'AL','02':'AK','04':'AZ','05':'AR','06':'CA','08':'CO','09':'CT','10':'DE',
+  '11':'DC','12':'FL','13':'GA','15':'HI','16':'ID','17':'IL','18':'IN','19':'IA',
+  '20':'KS','21':'KY','22':'LA','23':'ME','24':'MD','25':'MA','26':'MI','27':'MN',
+  '28':'MS','29':'MO','30':'MT','31':'NE','32':'NV','33':'NH','34':'NJ','35':'NM',
+  '36':'NY','37':'NC','38':'ND','39':'OH','40':'OK','41':'OR','42':'PA','44':'RI',
+  '45':'SC','46':'SD','47':'TN','48':'TX','49':'UT','50':'VT','51':'VA','53':'WA',
+  '54':'WV','55':'WI','56':'WY'
+};
+
+function fmtK(n) {
+  if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return '$' + Math.round(n/1000) + 'K';
+  return '$' + n;
+}
+
+// ─────────────────────────────────────────────
+// SLICERS
+// ─────────────────────────────────────────────
+function buildStateSlicer() {
+  const el = document.getElementById('stateSlicer');
+  el.innerHTML = '';
+  ['ALL', ...DATA.sl].forEach(st => {
+    const d = document.createElement('div');
+    d.className = 'slicer-item' + (st === selectedState ? ' active' : '');
+    d.textContent = st === 'ALL' ? 'All States' : st;
+    d.onclick = () => selectState(st);
+    el.appendChild(d);
+  });
+}
+
+function buildDescSlicer() {
+  const el = document.getElementById('descSlicer');
+  el.innerHTML = '';
+  DATA.ds.forEach(ds => {
+    const d = document.createElement('div');
+    d.className = 'slicer-item' + (ds === selectedDesc ? ' active' : '');
+    d.textContent = ds;
+    d.onclick = () => selectDesc(ds);
+    el.appendChild(d);
+  });
+}
+
+function selectState(st) {
+  selectedState = st;
+  document.querySelectorAll('#stateSlicer .slicer-item').forEach(el =>
+    el.classList.toggle('active', el.textContent === (st === 'ALL' ? 'All States' : st))
+  );
+  if (currentPage === 'exec') updateExec();
+}
+
+function selectDesc(ds) {
+  selectedDesc = ds;
+  document.querySelectorAll('#descSlicer .slicer-item').forEach(el =>
+    el.classList.toggle('active', el.textContent === ds)
+  );
+  updateBasket();
+}
+
+// ─────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────
+function setPage(name, btn) {
+  currentPage = name;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+
+  const sidebar    = document.getElementById('sidebar');
+  const stateLabel = document.getElementById('stateLabel');
+  const stateSlicer= document.getElementById('stateSlicer');
+  const descDivider= document.getElementById('descDivider');
+  const descLabel  = document.getElementById('descLabel');
+  const descSlicer = document.getElementById('descSlicer');
+
+  if (name === 'home') {
+    sidebar.style.display = 'none';
+  } else {
+    sidebar.style.display = 'flex';
+    sidebar.scrollTop = 0;
+    const showDesc  = (name === 'basket');
+    const showState = !showDesc;
+    stateLabel.style.display  = showState ? '' : 'none';
+    stateSlicer.style.display = showState ? '' : 'none';
+    descDivider.style.display = showDesc  ? '' : 'none';
+    descLabel.style.display   = showDesc  ? '' : 'none';
+    descSlicer.style.display  = showDesc  ? '' : 'none';
+  }
+
+  if (name === 'exec')   { updateExec(); }
+  if (name === 'ship')   { updateShipping(); }
+  if (name === 'basket') { updateBasket(); }
+}
+
+function setPageByName(name) {
+  const btn = document.querySelector('.nav-btn[onclick*="\'' + name + '\'"]');
+  setPage(name, btn);
+}
+
+// ─────────────────────────────────────────────
+// EXEC SUMMARY
+// ─────────────────────────────────────────────
+function updateExec() {
+  const d = DATA.sd[selectedState] || DATA.sd['ALL'];
+  document.getElementById('kpi-sales').textContent  = fmtK(d.s);
+  document.getElementById('kpi-profit').textContent = fmtK(Math.round(d.s * d.m / 100));
+  document.getElementById('kpi-margin').textContent = d.m + '%';
+  document.getElementById('kpi-state-label').textContent = selectedState === 'ALL' ? 'All States' : selectedState;
+
+  buildDescCatChart(d);
+  buildTreemap(d);
+  buildUSMap();
+}
+
+// Total Sales by Description and Category (horizontal bar, colour-coded)
+function buildDescCatChart(d) {
+  let items;
+  if (selectedState === 'ALL') {
+    items = PROD_ALL.map(p => ({
+      label: p.d.length > 30 ? p.d.slice(0, 30) + '…' : p.d,
+      val: p.s,
+      cat: p.c
+    }));
+  } else {
+    items = d.top.map(t => ({
+      label: t.d.length > 30 ? t.d.slice(0, 30) + '…' : t.d,
+      val: t.s,
+      cat: PROD_CAT[t.d] || 'Food'
+    }));
+  }
+
+  document.getElementById('descCatSub').textContent =
+    (selectedState === 'ALL' ? 'All States' : selectedState) + ' · sorted by revenue';
+
+  const labels   = items.map(x => x.label);
+  const vals     = items.map(x => x.val);
+  const bgColors = items.map(x => CAT_COLOR_DIM[x.cat] || TEAL_DIM);
+  const bdColors = items.map(x => CAT_COLOR[x.cat] || TEAL);
+
+  if (descCatChart) {
+    descCatChart.data.labels = labels;
+    descCatChart.data.datasets[0].data = vals;
+    descCatChart.data.datasets[0].backgroundColor = bgColors;
+    descCatChart.data.datasets[0].borderColor = bdColors;
+    descCatChart.update('none');
+  } else {
+    buildCatLegend();
+    descCatChart = new Chart(document.getElementById('descCatChart'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data: vals,
+          backgroundColor: bgColors,
+          borderColor: bdColors,
+          borderWidth: 1,
+          borderRadius: 2
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => ' ' + items[c.dataIndex].cat + ': ' + fmtK(c.raw) } }
+        },
+        scales: {
+          x: { ticks: { callback: v => fmtK(v), font: { size: 9 } } },
+          y: { ticks: { font: { size: 9 } } }
+        }
+      }
+    });
+  }
+}
+
+function buildCatLegend() {
+  const el = document.getElementById('catLegend');
+  if (el.children.length) return;
+  Object.entries(CAT_COLOR).forEach(([cat, color]) => {
+    const item = document.createElement('div');
+    item.style.cssText = 'display:flex;align-items:center;gap:4px;';
+    item.innerHTML = `<div style="width:8px;height:8px;background:${color};border-radius:1px;flex-shrink:0;"></div>
+      <span style="font-family:'DM Mono',monospace;font-size:7.5px;color:var(--grey-mid);">${cat}</span>`;
+    el.appendChild(item);
+  });
+}
+
+// Profit % by Category — CSS treemap
+function buildTreemap(d) {
+  const catColors = ['#3dd6c8','#4da6ff','#c084fc','#fb923c','#4ade80','#f472b6','#60a5fa'];
+  const items = DATA.tc
+    .map((name, i) => ({ name, profit: Math.round(d.cat[i] * d.m / 100) }))
+    .sort((a, b) => b.profit - a.profit);
+  const total = items.reduce((s, x) => s + x.profit, 0);
+
+  // Split: top 3 in row 1, bottom 4 in row 2
+  const r1 = items.slice(0, 3);
+  const r2 = items.slice(3);
+  const r1Total = r1.reduce((s, x) => s + x.profit, 0);
+  const r2Total = r2.reduce((s, x) => s + x.profit, 0);
+
+  const cell = (item, ci, small) => {
+    const pct = (item.profit / total * 100).toFixed(1);
+    return `<div style="flex:${item.profit};background:${catColors[ci]};padding:${small ? '4px 5px' : '7px 9px'};
+      display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;min-width:0;opacity:0.9;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:${small ? '9px' : '11px'};
+        color:rgba(0,0,0,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">${item.name}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:${small ? '7px' : '8px'};color:rgba(0,0,0,0.65);">${pct}%</div>
+    </div>`;
+  };
+
+  document.getElementById('catTreemap').innerHTML = `
+    <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:2px;">
+      <div style="display:flex;flex:${r1Total};gap:2px;min-height:0;">
+        ${r1.map((item, i) => cell(item, i, false)).join('')}
+      </div>
+      <div style="display:flex;flex:${r2Total};gap:2px;min-height:0;">
+        ${r2.map((item, i) => cell(item, i + 3, true)).join('')}
+      </div>
+    </div>`;
+}
+
+// Total Sales by State — D3 choropleth map
+function buildUSMap() {
+  if (usMapLoaded) { updateMapColors(); return; }
+
+  const container = document.getElementById('stateTileMap');
+  container.innerHTML = '<svg id="usMapSvg" style="width:100%;height:100%;display:block;"></svg>';
+
+  const maxSales = Math.max(...DATA.sl.map(st => DATA.sd[st]?.s || 0));
+
+  (function renderMap(us) {
+    if (!us) {
+      document.getElementById('stateTileMap').innerHTML =
+        '<div style="padding:12px;color:var(--grey-mid);font-size:11px;">Map data not loaded</div>';
+      return;
+    }
+    usMapLoaded = true;
+    const el = document.getElementById('stateTileMap');
+    const w = el.clientWidth  || 260;
+    const h = el.clientHeight || 240;
+
+    const projection = d3.geoAlbersUsa().fitSize([w, h],
+      topojson.feature(us, us.objects.states));
+    const path = d3.geoPath().projection(projection);
+
+    const svg = d3.select('#usMapSvg')
+      .attr('viewBox', `0 0 ${w} ${h}`)
+      .attr('preserveAspectRatio', 'xMidYMid meet');
+
+    svg.selectAll('path')
+      .data(topojson.feature(us, us.objects.states).features)
+      .enter()
+      .append('path')
+        .attr('d', path)
+        .attr('id', d => 'sp-' + (FIPS_STATE[String(d.id).padStart(2,'0')] || ''))
+        .attr('stroke', 'rgba(255,255,255,0.12)')
+        .attr('stroke-width', 0.5)
+        .attr('cursor', 'pointer')
+        .on('click', (event, d) => {
+          const st = FIPS_STATE[String(d.id).padStart(2,'0')];
+          if (st) selectState(st);
+        })
+        .append('title')
+          .text(d => {
+            const st = FIPS_STATE[String(d.id).padStart(2,'0')] || '';
+            return st + ': ' + fmtK(DATA.sd[st]?.s || 0);
+          });
+
+    updateMapColors();
+  })(window.US_STATES_TOPO);
+}
+
+function updateMapColors() {
+  const maxSales = Math.max(...DATA.sl.map(st => DATA.sd[st]?.s || 0));
+  DATA.sl.forEach(st => {
+    const el = document.getElementById('sp-' + st);
+    if (!el) return;
+    const sales = DATA.sd[st]?.s || 0;
+    const ratio  = Math.pow(sales / maxSales, 0.4);
+    const alpha  = (0.08 + ratio * 0.88).toFixed(2);
+    const isActive = selectedState === st;
+    el.style.fill        = isActive ? '#ffffff' : `rgba(61,214,200,${alpha})`;
+    el.style.stroke      = isActive ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.12)';
+    el.style.strokeWidth = isActive ? '1.5' : '0.5';
+  });
+}
+
+// ─────────────────────────────────────────────
+// SHIPPING
+// ─────────────────────────────────────────────
+function updateShipping() {
+  if (shipChart) return;
+  const labels = ['Taste of Wild 40lb','Memory Foam Beds','Cat Litter','Purina ONE 10lb','Purina Pro Plan','Canned Cat Food','ProBiotic Supps','Indoor Camera','NexGard Chew','Cat Treats'];
+  const vals   = [20, 12, 9, 10, 10, 9, 7, 7, 7, 6];
+  shipChart = new Chart(document.getElementById('shipChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: vals, backgroundColor: TEAL_DIM, borderColor: TEAL, borderWidth: 1, borderRadius: 2 }] },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' $' + c.raw + ' per 1,000 mi' } } },
+      scales: { x: { ticks: { callback: v => '$' + v } }, y: { ticks: { font: { size: 9 } } } }
+    }
+  });
+  const rows = [['1','1.00×','Full cost'],['2–3','0.75×','25% saving'],['4–6','0.55×','45% saving'],['7–8','0.45×','55% saving'],['9+','0.40×','60% saving'],['Bulk','0.30×','70% saving']];
+  document.getElementById('multiTable').innerHTML = rows.map(r =>
+    `<tr>${r.map(v => `<td style="padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04);${v.includes('×') ? 'color:var(--teal);font-weight:600;' : ''}">${v}</td>`).join('')}</tr>`
+  ).join('');
+  updateWhatIf();
+}
+
+function updateWhatIf() {
+  const mult = document.getElementById('wiSlider').value / 100;
+  const baseline = 385150;
+  const whatif = Math.round(baseline * mult);
+  document.getElementById('sliderVal').textContent = mult.toFixed(2) + '×';
+  document.getElementById('wi-cost').textContent = '$' + whatif.toLocaleString();
+  document.getElementById('wi-saving').textContent = '$' + (baseline - whatif).toLocaleString();
+}
+
+// ─────────────────────────────────────────────
+// MARKET BASKET
+// ─────────────────────────────────────────────
+function updateBasket() {
+  // Build the static bottom combo chart once; defer so flex layout resolves first
+  if (!salesProfitChart) setTimeout(buildSalesProfitChart, 60);
+
+  if (!selectedDesc) {
+    document.getElementById('basketChartTitle').textContent = 'Combination of Purchased Items';
+    document.getElementById('basketChartSub').textContent   = 'Select a product from the left panel';
+    // Destroy existing basket chart so canvas is clean
+    if (basketChart) { basketChart.destroy(); basketChart = null; }
+    document.getElementById('pairTableBody').innerHTML =
+      '<tr><td colspan="3" style="padding:16px 10px;color:var(--grey-mid);font-size:11px;">Select a product to view pairings.</td></tr>';
+    return;
+  }
+
+  const pairs = DATA.bk[selectedDesc] || [];
+  if (!pairs.length) return;
+
+  const labels = pairs.map(p => p.d.length > 28 ? p.d.slice(0, 28) + '…' : p.d);
+  const vals   = pairs.map(p => p.c);
+  const maxC   = vals[0] || 1;
+
+  document.getElementById('basketChartTitle').textContent = 'Combination of Purchased Items';
+  document.getElementById('basketChartSub').textContent   = 'Co-purchased with: ' + selectedDesc;
+
+  // Always destroy + recreate for reliability
+  if (basketChart) { basketChart.destroy(); basketChart = null; }
+
+  basketChart = new Chart(document.getElementById('basketChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        backgroundColor: TEAL_DIM,
+        borderColor: TEAL,
+        borderWidth: 1,
+        borderRadius: 2
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ' Co-purchased ' + c.raw + ' times' } }
+      },
+      scales: {
+        x: { ticks: { stepSize: 50, font: { size: 9 } } },
+        y: { ticks: { font: { size: 9 } } }
+      }
+    }
+  });
+
+  document.getElementById('pairTableBody').innerHTML = pairs.map((p, i) => `<tr>
+    <td style="padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04);font-family:'DM Mono',monospace;font-size:10px;color:var(--grey-mid)">${i + 1}</td>
+    <td style="padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;">${p.d}</td>
+    <td style="padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04)">
+      <span class="pair-count">${p.c}</span>
+      <div class="bar-mini"><div class="bar-mini-fill" style="width:${Math.round(p.c / maxC * 100)}%"></div></div>
+    </td>
+  </tr>`).join('');
+}
+
+function buildSalesProfitChart() {
+  const labels  = PROD_ALL.map(p => PROD_SHORT[p.d] || p.d.slice(0, 12));
+  const sales   = PROD_ALL.map(p => p.s);
+  const margins = PROD_ALL.map(p => p.m);
+
+  salesProfitChart = new Chart(document.getElementById('salesProfitChart'), {
+    data: {
+      labels,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Total Sales',
+          data: sales,
+          backgroundColor: TEAL_DIM,
+          borderColor: TEAL,
+          borderWidth: 1,
+          borderRadius: 2,
+          yAxisID: 'y'
+        },
+        {
+          type: 'line',
+          label: 'Profit %',
+          data: margins,
+          borderColor: '#fb923c',
+          backgroundColor: 'rgba(251,146,60,0.08)',
+          pointBackgroundColor: '#fb923c',
+          borderWidth: 1.5,
+          pointRadius: 3,
+          fill: false,
+          tension: 0.3,
+          yAxisID: 'y2'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'end',
+          labels: { boxWidth: 8, font: { size: 9 }, color: GREY, padding: 12 }
+        },
+        tooltip: {
+          callbacks: {
+            label: c => ' ' + c.dataset.label + ': ' +
+              (c.dataset.yAxisID === 'y2' ? c.raw + '%' : fmtK(c.raw))
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { font: { size: 8 }, maxRotation: 40, minRotation: 30 } },
+        y: {
+          type: 'linear',
+          position: 'left',
+          ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'K', font: { size: 9 } }
+        },
+        y2: {
+          type: 'linear',
+          position: 'right',
+          grid: { drawOnChartArea: false },
+          ticks: { callback: v => v + '%', font: { size: 9 } },
+          min: 0,
+          max: 100
+        }
+      }
+    }
+  });
+}
+
+// ─────────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────────
+buildStateSlicer();
+buildDescSlicer();
+setPage('home', document.querySelector('.nav-btn.active'));
+</script>
+</body>
+</html>

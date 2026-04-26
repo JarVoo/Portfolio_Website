@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Olist E-Commerce Project - Jarred Voorneveld</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:      #0a0a0a;
+    --dark:       #111111;
+    --dark-mid:   #1a1a1a;
+    --dark-card:  #141414;
+    --teal:       #3dd6c8;
+    --teal-dim:   rgba(61,214,200,0.12);
+    --teal-rule:  rgba(61,214,200,0.28);
+    --white:      #ffffff;
+    --grey-light: #c8c8c8;
+    --grey-mid:   #888888;
+    --grey-dark:  #444444;
+    --rule:       rgba(255,255,255,0.07);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--grey-light);
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page-wrapper { max-width: 1080px; margin: 0 auto; padding: 0 48px; }
+
+  /* ── UTILITIES ── */
+  .teal-rule-short { width: 40px; height: 2px; background: var(--teal); margin-bottom: 18px; }
+
+  .mono-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    display: block;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 52px 0 44px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 40px;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .wordmark { margin-bottom: 28px; }
+  .wordmark-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--white); line-height: 1; }
+  .wordmark-sub { font-family: 'Barlow Condensed', sans-serif; font-weight: 400; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--teal); margin-top: 5px; }
+
+  .header-headline { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: clamp(34px, 5vw, 58px); line-height: 1.05; letter-spacing: 0.01em; text-transform: uppercase; color: var(--white); }
+  .header-headline span { color: var(--teal); }
+
+  .header-sub { margin-top: 18px; font-size: 15px; color: var(--grey-mid); max-width: 580px; line-height: 1.8; }
+
+  .header-right { text-align: right; padding-top: 4px; }
+  .header-right .mono-label { margin-bottom: 10px; }
+  .header-right p { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--grey-mid); line-height: 2; }
+  .doc-badge { display: inline-block; margin-top: 18px; padding: 7px 16px; border: 1px solid var(--teal-rule); font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); }
+
+  /* ── HERO BAND ── */
+  .hero-band { position: relative; width: calc(100% + 96px); margin-left: -48px; height: 280px; overflow: hidden; animation: fadeUp 0.7s 0.1s ease both; }
+  .hero-band img { width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: brightness(0.28) saturate(0.4); display: block; }
+  .hero-band .overlay { position: absolute; inset: 0; background: linear-gradient(to right, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.4) 50%, rgba(10,10,10,0.75) 100%); }
+  .hero-stats { position: absolute; bottom: 0; left: 0; right: 0; display: flex; border-top: 1px solid var(--teal-rule); }
+  .h-stat { flex: 1; text-align: center; padding: 18px 14px; border-right: 1px solid var(--teal-rule); }
+  .h-stat:last-child { border-right: none; }
+  .h-stat .snum { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700; color: var(--teal); line-height: 1; }
+  .h-stat .slabel { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey-mid); margin-top: 5px; }
+
+  /* ── SECTIONS ── */
+  section { padding: 56px 0; border-top: 1px solid var(--rule); animation: fadeUp 0.7s ease both; }
+  .sec-header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 30px; }
+  .sec-num { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.2em; color: var(--teal); text-transform: uppercase; }
+  .sec-title { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--white); line-height: 1; }
+
+  /* ── TWO-COL ── */
+  .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .col-left { padding-right: 44px; border-right: 1px solid var(--rule); }
+  .col-right { padding-left: 44px; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+  .col-left p, .body-p { font-size: 15px; line-height: 1.8; color: var(--grey-light); margin-bottom: 14px; }
+  .col-left p:last-child { margin-bottom: 0; }
+
+  .pull-quote { border-left: 2px solid var(--teal); padding-left: 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 400; font-style: italic; color: var(--white); line-height: 1.5; }
+
+  /* ── PILLS ── */
+  .pills { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pill { padding: 8px 18px; border: 1px solid var(--teal-rule); font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey-light); background: var(--dark-mid); transition: all 0.2s ease; }
+  .pill:hover { background: var(--teal-dim); color: var(--teal); border-color: var(--teal); }
+
+  /* ── DATA TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; border: 1px solid var(--rule); margin-bottom: 0; }
+  .data-table thead tr { background: var(--dark-mid); }
+  .data-table th { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); padding: 12px 18px; text-align: left; border-bottom: 1px solid var(--teal-rule); }
+  .data-table td { padding: 13px 18px; font-size: 13.5px; color: var(--grey-light); border-bottom: 1px solid var(--rule); line-height: 1.5; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tbody tr:hover td { background: rgba(61,214,200,0.03); color: var(--white); }
+  .data-table td:first-child { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 600; letter-spacing: 0.04em; color: var(--white); }
+  .teal-val { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: var(--teal); }
+
+  /* ── SCHEMA IMAGE ── */
+  .schema-wrap { border: 1px solid var(--teal-rule); overflow: hidden; margin-bottom: 28px; }
+  .schema-wrap img { width: 100%; display: block; filter: brightness(0.9); }
+
+  /* ── STATS IMAGE ── */
+  .chart-label { display: block; font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; }
+
+  .chart-img-wrap { margin: 14px 0 4px; overflow: hidden; position: relative; max-width: 55%; }
+  .chart-img-wrap img { width: 100%; display: block; border: 1px solid var(--teal-rule); filter: brightness(0.92); transition: filter 0.25s ease; }
+  .chart-img-wrap:hover img { filter: brightness(1); }
+
+  /* ── THREE-COL CARDS ── */
+  .three-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .th-card { padding: 22px 20px; border: 1px solid var(--rule); background: var(--dark-card); border-top: 2px solid var(--teal); transition: background 0.2s ease; }
+  .th-card:hover { background: var(--dark-mid); }
+  .th-card h4 { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--white); margin-bottom: 8px; }
+  .th-card p { font-size: 13px; color: var(--grey-mid); line-height: 1.65; }
+
+  /* ── METRIC STRIP ── */
+  .metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .metric-cell { background: var(--dark); padding: 20px 22px; }
+  .metric-cell .mc-label { font-family: 'DM Mono', monospace; font-size: 8.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); margin-bottom: 8px; }
+  .metric-cell .mc-val { font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 700; color: var(--white); line-height: 1; margin-bottom: 4px; }
+  .metric-cell .mc-desc { font-size: 12.5px; color: var(--grey-mid); line-height: 1.6; }
+
+  /* ── OUTCOMES ── */
+  .outcomes-list { display: flex; flex-direction: column; border: 1px solid var(--rule); }
+  .out-item { padding: 15px 22px; border-bottom: 1px solid var(--rule); display: flex; gap: 14px; align-items: flex-start; transition: background 0.2s ease; }
+  .out-item:last-child { border-bottom: none; }
+  .out-item:hover { background: var(--dark-mid); }
+  .out-icon { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--teal); padding-top: 3px; min-width: 20px; opacity: 0.8; }
+  .out-text { font-size: 14px; color: var(--grey-light); line-height: 1.65; }
+  .out-text strong { color: var(--white); font-weight: 600; }
+
+  /* ── HIGHLIGHT ── */
+  .highlight { background: var(--teal-dim); border-left: 2px solid var(--teal); padding: 16px 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-style: italic; font-weight: 400; color: var(--white); line-height: 1.5; }
+
+  /* ── SECTION INTRO ── */
+  .sec-intro { font-size: 15px; line-height: 1.8; color: var(--grey-light); max-width: 820px; margin-bottom: 28px; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  section:nth-of-type(1) { animation-delay: 0.05s; }
+  section:nth-of-type(2) { animation-delay: 0.10s; }
+  section:nth-of-type(3) { animation-delay: 0.14s; }
+  section:nth-of-type(4) { animation-delay: 0.18s; }
+  section:nth-of-type(5) { animation-delay: 0.21s; }
+  section:nth-of-type(6) { animation-delay: 0.24s; }
+  section:nth-of-type(7) { animation-delay: 0.27s; }
+  section:nth-of-type(8) { animation-delay: 0.30s; }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ══ HEADER ══ -->
+  <header>
+    <div>
+      <div class="wordmark">
+        <div class="wordmark-title">Jarred Voorneveld</div>
+        <div class="wordmark-sub">Portfolio - Data Analysis</div>
+      </div>
+      <h1 class="header-headline">
+        Olist<br>
+        E-Commerce<br>
+        <span>Brazilian Marketplace</span>
+      </h1>
+      <p class="header-sub">
+        A comprehensive analysis of Brazil's Olist online marketplace - 90,000+ orders, 
+        3,000 sellers, and 32,000 products - covering revenue trends, customer behaviour, 
+        product performance, delivery efficiency, and seller analysis using MySQL.
+      </p>
+    </div>
+    <div class="header-right">
+      <span class="mono-label">Document Type</span>
+      <p>Portfolio Project<br>E-Commerce Analytics<br>MySQL</p>
+      <span class="doc-badge">E-Commerce · Jul 2024</span>
+    </div>
+  </header>
+
+  <!-- ══ HERO BAND ══ -->
+  <div class="hero-band">
+    <img src="https://jarredsportfolio.netlify.app/projects/olist-ecommerce/hero.png" alt="Olist E-Commerce Project">
+    <div class="overlay"></div>
+    <div class="hero-stats">
+      <div class="h-stat"><div class="snum">99,441</div><div class="slabel">Unique Orders</div></div>
+      <div class="h-stat"><div class="snum">3,095</div><div class="slabel">Unique Sellers</div></div>
+      <div class="h-stat"><div class="snum">32,951</div><div class="slabel">Unique Products</div></div>
+      <div class="h-stat"><div class="snum">2 Yrs</div><div class="slabel">Sep 2016 - Oct 2018</div></div>
+    </div>
+  </div>
+
+  <!-- ══ 01 PROJECT OVERVIEW ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title">Project Overview</h2>
+    </div>
+    <div class="two-cols">
+      <div class="col-left">
+        <p>The Olist dataset is a comprehensive public resource containing transactional data from a Brazilian online marketplace connecting small sellers to customers nationwide. The dataset spans September 2016 to October 2018 - just over two years of transactional data - with over 90,000 orders, 32,000 products, and 3,000 sellers.</p>
+        <p>Each table captures a different part of the retail lifecycle - from order creation, payments, processing, and logistics. Delivery delays, cancellations, and seller performance via the reviews table are all tracked.</p>
+        <p>MySQL was used to build a clean analytical model and solve real-world e-commerce challenges across revenue, customer behaviour, product performance, delivery efficiency, and seller analysis.</p>
+      </div>
+      <div class="col-right">
+        <div class="pull-quote">"A real-world dataset that returns real analytical value - 90,000+ orders, multiple relatable tables, and genuine business problems to solve."</div>
+        <div>
+          <p class="mono-label" style="margin-bottom:12px;">Tech Stack</p>
+          <div class="pills">
+            <span class="pill">MySQL</span>
+            <span class="pill">EER Diagrams</span>
+            <span class="pill">Cohort Analysis</span>
+            <span class="pill">Pearson Correlation</span>
+            <span class="pill">Funnel Analysis</span>
+            <span class="pill">EDA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 02 DATASET SCHEMA ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title">Dataset Schema &amp; Data Cleaning</h2>
+    </div>
+
+    <p class="mono-label" style="margin-bottom:10px;">EER Diagram - MySQL Reverse Engineering</p>
+    <div class="schema-wrap">
+      <img src="https://jarredsportfolio.netlify.app/projects/olist-ecommerce/data-schema.png" alt="Dataset Schema Diagram">
+    </div>
+
+    <div class="two-cols">
+      <div class="col-left">
+        <p>Each of the CSV files was loaded into its own table in a MySQL schema. The EER diagram above was generated via reverse engineering in MySQL Workbench, showing all relationships and primary keys across the dataset.</p>
+        <p>Data cleaning and validity checks were then carried out before any analysis began.</p>
+      </div>
+      <div class="col-right" style="justify-content:flex-start; padding-top: 4px;">
+        <div class="outcomes-list">
+          <div class="out-item"><span class="out-icon">1</span><span class="out-text">Primary and foreign keys verified across all tables</span></div>
+          <div class="out-item"><span class="out-icon">2</span><span class="out-text">Date ranges confirmed across all tables (2016 - 2018)</span></div>
+          <div class="out-item"><span class="out-icon">3</span><span class="out-text">610 NULL product category rows replaced with 'unknown'</span></div>
+          <div class="out-item"><span class="out-icon">4</span><span class="out-text">Translation table used to convert all category names to English</span></div>
+          <div class="out-item"><span class="out-icon">5</span><span class="out-text">Duplicate check performed - no duplicates detected</span></div>
+          <div class="out-item"><span class="out-icon">6</span><span class="out-text">All categorical text standardised - lowercased and stripped of whitespace</span></div>
+          <div class="out-item"><span class="out-icon">7</span><span class="out-text">Flags created for unrealistically long delivery times and undelivered orders</span></div>
+          <div class="out-item"><span class="out-icon">8</span><span class="out-text">Columns added for product volume, actual delivery days, and total item value</span></div>
+          <div class="out-item"><span class="out-icon">9</span><span class="out-text">New seller performance table created - tracking total orders and average review score</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight" style="margin-top: 32px;">
+      99,441 unique orders - 96,096 unique customers - 3,095 unique sellers - 32,951 unique products. Dataset period: 04 Sept 2016 to 17 Oct 2018.
+    </div>
+  </section>
+
+  <!-- ══ 03 SALES & OPERATIONS ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title">Sales &amp; Operations Performance</h2>
+    </div>
+
+    <div class="two-cols" style="margin-bottom: 36px;">
+      <div class="col-left">
+        <p class="mono-label" style="margin-bottom:14px;">Key Basket Metrics</p>
+        <div class="metric-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 0;">
+          <div class="metric-cell">
+            <div class="mc-label">Avg Cart Size</div>
+            <div class="mc-val">1.14</div>
+            <div class="mc-desc">Items per order</div>
+          </div>
+          <div class="metric-cell">
+            <div class="mc-label">Avg Cart Value</div>
+            <div class="mc-val">R$137.75</div>
+            <div class="mc-desc">Excluding freight</div>
+          </div>
+          <div class="metric-cell">
+            <div class="mc-label">Avg Freight</div>
+            <div class="mc-val">R$22.82</div>
+            <div class="mc-desc">Per order</div>
+          </div>
+          <div class="metric-cell">
+            <div class="mc-label">Total Items Sold</div>
+            <div class="mc-val">112,650</div>
+            <div class="mc-desc">Across all orders</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-right" style="justify-content:flex-start;">
+        <p class="mono-label" style="margin-bottom:10px;">Order Status Breakdown</p>
+        <table class="data-table">
+          <thead><tr><th>Status</th><th>Orders</th><th>% of Total</th></tr></thead>
+          <tbody>
+            <tr><td>Delivered</td><td>96,478</td><td><span class="teal-val">97.02%</span></td></tr>
+            <tr><td>Shipped</td><td>1,107</td><td>1.11%</td></tr>
+            <tr><td>Cancelled</td><td>625</td><td>0.63%</td></tr>
+            <tr><td>Unavailable</td><td>609</td><td>0.61%</td></tr>
+            <tr><td>Invoiced</td><td>314</td><td>0.32%</td></tr>
+            <tr><td>Processing</td><td>301</td><td>0.30%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <span class="chart-label">Monthly Revenue Trend - Sep 2016 to Oct 2018</span>
+    <div class="chart-img-wrap" style="max-width:88%;">
+      <img src="https://jarredsportfolio.netlify.app/projects/olist-ecommerce/revenue-trend.png" alt="Monthly Revenue Trend">
+    </div>
+    <p style="font-size:13.5px;color:var(--grey-mid);margin-top:10px;line-height:1.7;">
+      Revenue rose steadily from 2016 to mid-2018, peaking around mid-year before dropping sharply - likely due to missing or incomplete data rather than actual business decline. 2,970 sellers have sold at least one product, leaving 125 sellers without a purchase.
+    </p>
+  </section>
+
+  <!-- ══ 04 REVENUE & PAYMENT ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">04</span>
+      <h2 class="sec-title">Revenue &amp; Payment Analysis</h2>
+    </div>
+    <div class="two-cols">
+      <div class="col-left">
+        <p class="mono-label" style="margin-bottom:12px;">Payment Method Breakdown</p>
+        <table class="data-table">
+          <thead><tr><th>Payment Method</th><th>Purchases</th><th>% of Total</th></tr></thead>
+          <tbody>
+            <tr><td>Credit Card</td><td>76,795</td><td><span class="teal-val">73.92%</span></td></tr>
+            <tr><td>Boleto</td><td>19,784</td><td>19.04%</td></tr>
+            <tr><td>Voucher</td><td>5,775</td><td>5.56%</td></tr>
+            <tr><td>Debit Card</td><td>1,529</td><td>1.47%</td></tr>
+            <tr><td>Not Defined</td><td>3</td><td>0.00%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-right">
+        <div class="pull-quote">"Credit card payments make up 74% of all transactions. Single payments account for 95.6% of all orders."</div>
+        <p style="font-size:14px;color:var(--grey-mid);line-height:1.75;">Boleto - a popular Brazilian payment method using barcodes - accounts for the second largest share at 19%. Single payments dominate at 95.6%, followed by 2 sequential payments at 2.9%.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 05 DELIVERY & LOGISTICS ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">05</span>
+      <h2 class="sec-title">Delivery &amp; Logistics</h2>
+    </div>
+
+    <div class="metric-row" style="margin-bottom: 32px;">
+      <div class="metric-cell">
+        <div class="mc-label">Avg Delivery Time</div>
+        <div class="mc-val">12 days</div>
+        <div class="mc-desc">From order approval to customer delivery</div>
+      </div>
+      <div class="metric-cell">
+        <div class="mc-label">Late Deliveries</div>
+        <div class="mc-val">6.84%</div>
+        <div class="mc-desc">Delivered after the estimated date</div>
+      </div>
+      <div class="metric-cell">
+        <div class="mc-label">Pearson Correlation</div>
+        <div class="mc-val">-0.27</div>
+        <div class="mc-desc">Between delivery delay and review score - medium correlation</div>
+      </div>
+    </div>
+
+    <div class="two-cols">
+      <div class="col-left">
+        <p>The average delivery time from order approval to customer delivery was 12 days. 6.84% of deliveries arrived after their estimated delivery date.</p>
+        <p>A Pearson correlation of -0.27 between delivery delay and review scores indicates a medium negative correlation - suggesting delivery time alone does not fully explain poor reviews. Product quality or other factors likely play a role.</p>
+      </div>
+      <div class="col-right" style="justify-content:flex-start;">
+        <p class="mono-label" style="margin-bottom:10px;">Review Score Distribution - Late Orders</p>
+        <table class="data-table">
+          <thead><tr><th>Review Score</th><th>Orders with Reviews</th></tr></thead>
+          <tbody>
+            <tr><td>1 star</td><td>3,411</td></tr>
+            <tr><td>2 stars</td><td>540</td></tr>
+            <tr><td>3 stars</td><td>687</td></tr>
+            <tr><td>4 stars</td><td>644</td></tr>
+            <tr><td>5 stars</td><td>1,046</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 06 CUSTOMER BEHAVIOUR ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">06</span>
+      <h2 class="sec-title">Customer Behaviour</h2>
+    </div>
+
+    <div class="metric-row" style="margin-bottom: 32px;">
+      <div class="metric-cell">
+        <div class="mc-label">Repeat Customers</div>
+        <div class="mc-val">2,997</div>
+        <div class="mc-desc">Placed more than one order - approximately 3% of all customers</div>
+      </div>
+      <div class="metric-cell">
+        <div class="mc-label">Avg Time Between Orders</div>
+        <div class="mc-val">92 days</div>
+        <div class="mc-desc">Average gap between first and second purchase</div>
+      </div>
+      <div class="metric-cell">
+        <div class="mc-label">AOV per Customer</div>
+        <div class="mc-val">R$125.98</div>
+        <div class="mc-desc">Average order value across the customer base</div>
+      </div>
+    </div>
+
+    <p class="mono-label" style="margin-bottom:12px;">Top 5 Cities by Revenue &amp; Orders</p>
+    <table class="data-table">
+      <thead><tr><th>City</th><th>Orders</th><th>Total Revenue (BRL)</th></tr></thead>
+      <tbody>
+        <tr><td>Sao Paulo</td><td>17,146</td><td><span class="teal-val">R$1,836,014</span></td></tr>
+        <tr><td>Rio de Janeiro</td><td>7,487</td><td>R$943,285</td></tr>
+        <tr><td>Belo Horizonte</td><td>3,029</td><td>R$339,754</td></tr>
+        <tr><td>Brasilia</td><td>2,398</td><td>R$288,942</td></tr>
+        <tr><td>Curitiba</td><td>1,700</td><td>R$303,405</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ 07 PRODUCT PERFORMANCE ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">07</span>
+      <h2 class="sec-title">Product Performance</h2>
+    </div>
+    <p class="sec-intro">Top 5 product categories by sales volume and total revenue across the full dataset period.</p>
+    <table class="data-table">
+      <thead><tr><th>Product Category</th><th>Sales Volume</th><th>Total Revenue (BRL)</th></tr></thead>
+      <tbody>
+        <tr><td>Health &amp; Beauty</td><td>9,299</td><td><span class="teal-val">R$1,211,684</span></td></tr>
+        <tr><td>Watches &amp; Gifts</td><td>5,758</td><td>R$1,151,763</td></tr>
+        <tr><td>Bed, Bath &amp; Table</td><td>10,788</td><td>R$1,008,658</td></tr>
+        <tr><td>Sports &amp; Leisure</td><td>8,336</td><td>R$944,483</td></tr>
+        <tr><td>Computers &amp; Accessories</td><td>7,549</td><td>R$877,529</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ 08 EXECUTIVE SUMMARY ══ -->
+  <section>
+    <div class="sec-header">
+      <span class="sec-num">08</span>
+      <h2 class="sec-title">Executive Summary &amp; Key Metrics</h2>
+    </div>
+
+    <div class="two-cols" style="margin-bottom: 36px;">
+      <div class="col-left">
+        <p>The marketplace shows steady growth and strong logistics efficiency, with 97% of orders successfully delivered at an average of 12 days from approval. Customer satisfaction remains high with an average review score of 4.09, despite moderate delivery delays.</p>
+        <p>Credit cards dominate payments at 74%, and Sao Paulo leads all cities in both order volume and total revenue. Health &amp; Beauty leads product categories in both sales volume and revenue. Future optimisation lies in improving performance in slower categories and supporting underperforming sellers.</p>
+      </div>
+      <div class="col-right" style="justify-content:flex-start;">
+        <p class="mono-label" style="margin-bottom:12px;">Recommendations</p>
+        <div class="outcomes-list">
+          <div class="out-item"><span class="out-icon">→</span><span class="out-text"><strong>Focus marketing</strong> on high-value cities - Sao Paulo and Rio de Janeiro.</span></div>
+          <div class="out-item"><span class="out-icon">→</span><span class="out-text"><strong>Investigate long-delivery sellers</strong> for performance improvement opportunities.</span></div>
+          <div class="out-item"><span class="out-icon">→</span><span class="out-text"><strong>Explore repeat-buyer incentives</strong> to increase the 3% retention rate.</span></div>
+          <div class="out-item"><span class="out-icon">→</span><span class="out-text"><strong>Promote credit card payments</strong> which offer the fastest clearance for sellers.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="mono-label" style="margin-bottom:12px;">Key Metrics Summary</p>
+    <table class="data-table" style="margin-bottom: 0;">
+      <thead><tr><th>Metric</th><th>Value</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Total Orders</td><td><span class="teal-val">99,441</span></td><td>Total transactions in the dataset</td></tr>
+        <tr><td>Delivered Orders</td><td>96,478 (97%)</td><td>Successfully delivered to customers</td></tr>
+        <tr><td>Avg Delivery Time</td><td>12 days</td><td>From order approval to customer delivery</td></tr>
+        <tr><td>Late Deliveries</td><td>6.84%</td><td>Delivered beyond the estimated date</td></tr>
+        <tr><td>AOV</td><td>R$137.75</td><td>Average order value, excluding freight</td></tr>
+        <tr><td>Avg Cart Freight</td><td>R$22.82</td><td>Average shipping cost per order</td></tr>
+        <tr><td>Repeat Customers</td><td>2,997 (3%)</td><td>Customers with more than one order</td></tr>
+        <tr><td>Avg Time Between Orders</td><td>80 days</td><td>Loyalty and re-engagement indicator</td></tr>
+        <tr><td>Avg Review Score</td><td>4.09</td><td>Overall customer satisfaction rating</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ GITHUB LINK ══ -->
+  <div style="border-top:1px solid rgba(255,255,255,0.07);padding:32px 0;display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <p style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#3dd6c8;margin-bottom:6px;">Source Files</p>
+      <p style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:#c8c8c8;">Full SQL scripts - Olist E-Commerce Analysis</p>
+    </div>
+    <a href="https://github.com/JarVoo" target="_blank" style="padding:11px 28px;background:#3dd6c8;color:#0a0a0a;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#5ee8db'" onmouseout="this.style.background='#3dd6c8'">View on GitHub -></a>
+  </div>
+
+  <!-- ══ FOOTER ══ -->
+  <footer style="border-top:1px solid rgba(255,255,255,0.07);padding:26px 0;display:flex;justify-content:space-between;align-items:center;">
+    <p style="font-family:'DM Mono',monospace;font-size:10px;color:#444;letter-spacing:0.1em;">Jarred Voorneveld - Data Analyst</p>
+    <div style="text-align:center;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:0.25em;text-transform:uppercase;color:#ffffff;line-height:1;">Olist E-Commerce</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:#3dd6c8;margin-top:3px;">MySQL - Jul 2024</div>
+    </div>
+    <p style="font-family:'DM Mono',monospace;font-size:10px;color:#444;letter-spacing:0.1em;">Jul 2024 - Portfolio Project</p>
+  </footer>
+
+</div>
+</body>
+</html>
