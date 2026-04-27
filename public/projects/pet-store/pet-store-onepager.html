@@ -9,13 +9,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script src="./states-data.js"></script>
+<script src="./basket-state-data.js"></script>
+<script src="./ship-state-data.js"></script>
 <style>
 :root{--black:#0a0a0a;--dark:#111;--panel:#141414;--teal:#3dd6c8;--teal-dim:rgba(61,214,200,0.12);--teal-rule:rgba(61,214,200,0.28);--white:#fff;--grey:#c8c8c8;--grey-mid:#888;--border:rgba(255,255,255,0.07);}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{background:var(--black);color:var(--grey);font-family:'Barlow',sans-serif;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
 
 /* ── STANDALONE DASHBOARD BLOCK ── */
-.dashboard{width:100%;height:840px;display:flex;flex-direction:column;overflow:hidden;background:var(--black);font-size:13px;}
+.dashboard{width:100%;height:840px;display:flex;flex-direction:column;overflow:hidden;background:var(--black);font-size:13px;border:1px solid rgba(255,255,255,0.09);border-radius:4px;box-shadow:0 0 0 1px rgba(61,214,200,0.06),0 8px 40px rgba(0,0,0,0.55);}
 
 /* ── TOPBAR ── */
 .topbar{display:flex;align-items:center;height:52px;border-bottom:1px solid var(--border);background:var(--panel);padding:0 24px;flex-shrink:0;}
@@ -61,15 +63,22 @@ html,body{background:var(--black);color:var(--grey);font-family:'Barlow',sans-se
 .chart-wrap{position:relative;width:100%;flex:1;min-height:0;}
 
 /* ── HOME ── */
-.home-hero{background:var(--panel);border:1px solid var(--border);padding:28px 32px;margin-bottom:12px;display:flex;align-items:center;gap:32px;flex-shrink:0;}
-.home-hero img{width:220px;height:140px;object-fit:cover;filter:brightness(.35) saturate(.4);flex-shrink:0;}
+.home-hero{background:var(--panel);border:1px solid var(--border);padding:0;margin-bottom:12px;display:flex;align-items:stretch;flex-shrink:0;overflow:hidden;min-height:240px;}
+.home-hero img{flex:0 0 50%;width:50%;object-fit:cover;object-position:center;filter:brightness(.42) saturate(.38);display:block;}
+.home-hero-text{flex:1;padding:32px 36px;display:flex;flex-direction:column;justify-content:center;}
 .home-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(22px,3vw,34px);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--white);line-height:1.1;margin-bottom:10px;}
 .home-sub{font-size:13px;color:var(--grey-mid);line-height:1.7;max-width:520px;}
 .home-nav-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;flex-shrink:0;}
-.home-card{background:var(--panel);border:1px solid var(--border);padding:18px 20px;cursor:pointer;transition:border-color .15s,background .15s;}
-.home-card:hover{border-color:var(--teal-rule);background:rgba(61,214,200,0.04);}
-.home-card-num{font-family:'DM Mono',monospace;font-size:9px;color:var(--teal);letter-spacing:.2em;margin-bottom:8px;}
-.home-card-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--white);margin-bottom:4px;}
+.home-card{background:var(--panel);border:1px solid var(--border);padding:20px 20px 20px 16px;cursor:pointer;transition:border-color .18s,background .18s;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;}
+.home-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--teal);opacity:0;transition:opacity .18s;}
+.home-card:hover{border-color:var(--teal-rule);background:rgba(61,214,200,0.05);}
+.home-card:hover::before{opacity:1;}
+.home-card-badge{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(61,214,200,0.45);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:400;color:var(--teal);flex-shrink:0;margin-top:1px;transition:background .18s,border-color .18s;}
+.home-card:hover .home-card-badge{background:var(--teal);border-color:var(--teal);color:#0a0a0a;}
+.home-card-body{flex:1;min-width:0;}
+.home-card-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--white);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;}
+.home-card-title::after{content:'→';font-size:14px;color:var(--grey-mid);transition:color .18s,transform .18s;display:inline-block;}
+.home-card:hover .home-card-title::after{color:var(--teal);transform:translateX(3px);}
 .home-card-desc{font-size:11px;color:var(--grey-mid);line-height:1.5;}
 .home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);flex-shrink:0;}
 .home-stat{background:var(--panel);padding:14px 16px;}
@@ -102,6 +111,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
 .pair-count{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--teal);}
 .bar-mini{height:3px;background:var(--teal-dim);border-radius:2px;margin-top:3px;}
 .bar-mini-fill{height:100%;background:var(--teal);border-radius:2px;}
+
+/* ── BASKET INLINE SLICER ── */
+.basket-item{display:flex;align-items:flex-start;gap:8px;padding:5px 12px;cursor:pointer;font-size:11px;color:var(--grey-mid);transition:background .1s;line-height:1.35;}
+.basket-item:hover{background:rgba(255,255,255,0.04);color:var(--grey);}
+.basket-item.active{color:var(--grey);}
+.basket-check{width:13px;height:13px;border:1px solid rgba(255,255,255,0.22);background:transparent;flex-shrink:0;border-radius:2px;margin-top:1px;position:relative;}
+.basket-item.active .basket-check{border-color:var(--teal);background:var(--teal);}
+.basket-check::after{content:'';position:absolute;display:none;left:3px;top:0px;width:5px;height:8px;border-right:1.5px solid #000;border-bottom:1.5px solid #000;transform:rotate(45deg);}
+.basket-item.active .basket-check::after{display:block;}
 
 </style>
 </head>
@@ -146,26 +164,32 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
     <div class="panel active" id="panel-home">
       <div class="home-hero">
         <img src="./hero.webp" alt="Whiskique">
-        <div>
+        <div class="home-hero-text">
           <div class="home-title">E-Commerce Performance<br>Analysis in Power BI</div>
           <div class="home-sub">A four-page Power BI report for Whiskique — a US-based online pet store. Covers executive financials, shipping cost modelling, and market basket cross-sell analysis across 20 products, 51 states, and 13 months of transactional data.</div>
         </div>
       </div>
       <div class="home-nav-cards">
         <div class="home-card" onclick="setPageByName('exec')">
-          <div class="home-card-num">01 ——</div>
-          <div class="home-card-title">Executive Summary</div>
-          <div class="home-card-desc">Revenue by category, top products by description, and geographic breakdown. Filter by state.</div>
+          <div class="home-card-badge">01</div>
+          <div class="home-card-body">
+            <div class="home-card-title">Executive Summary</div>
+            <div class="home-card-desc">Revenue by category, top products by description, and geographic breakdown. Filter by state.</div>
+          </div>
         </div>
         <div class="home-card" onclick="setPageByName('ship')">
-          <div class="home-card-num">02 ——</div>
-          <div class="home-card-title">Shipping Metrics</div>
-          <div class="home-card-desc">Shipping cost per 1,000 miles by SKU and a What-If bulk quantity multiplier model.</div>
+          <div class="home-card-badge">02</div>
+          <div class="home-card-body">
+            <div class="home-card-title">Shipping Metrics</div>
+            <div class="home-card-desc">Shipping cost per 1,000 miles by SKU and a What-If bulk quantity multiplier model.</div>
+          </div>
         </div>
         <div class="home-card" onclick="setPageByName('basket')">
-          <div class="home-card-num">03 ——</div>
-          <div class="home-card-title">Market Basket</div>
-          <div class="home-card-desc">Co-purchase frequency analysis. Select a product to see its top cross-sell pairings.</div>
+          <div class="home-card-badge">03</div>
+          <div class="home-card-body">
+            <div class="home-card-title">Market Basket</div>
+            <div class="home-card-desc">Co-purchase frequency analysis. Select a product to see its top cross-sell pairings.</div>
+          </div>
         </div>
       </div>
       <div class="home-stats">
@@ -226,62 +250,71 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
     <!-- ══ SHIPPING METRICS ══ -->
     <div class="panel" id="panel-ship">
       <div class="ship-kpis">
-        <div class="ship-kpi"><div class="ship-kpi-label">Shipping Baseline</div><div class="ship-kpi-value">$385,150</div></div>
-        <div class="ship-kpi"><div class="ship-kpi-label">What-If Cost</div><div class="ship-kpi-value" id="wi-cost">$327,378</div></div>
-        <div class="ship-kpi"><div class="ship-kpi-label">Potential Saving</div><div class="ship-kpi-value" id="wi-saving">$57,773</div></div>
+        <div class="ship-kpi"><div class="ship-kpi-label">Shipping Baseline</div><div class="ship-kpi-value" id="wi-baseline">$381,320</div></div>
+        <div class="ship-kpi"><div class="ship-kpi-label">What-If Cost</div><div class="ship-kpi-value" id="wi-cost">$325,097</div></div>
+        <div class="ship-kpi"><div class="ship-kpi-label">Potential Saving</div><div class="ship-kpi-value" id="wi-saving">$56,227</div></div>
       </div>
       <div class="whatif-box">
-        <div class="wi-title">What-If Bulk Quantity Multiplier</div>
-        <div class="wi-sub">Drag to model the impact of applying a bulk discount multiplier to shipping costs.</div>
+        <div class="wi-title">Select Shipping Quantity</div>
+        <div class="wi-sub">Select the number of items per shipment to model bulk shipping cost savings.</div>
         <div class="slider-row">
-          <span class="sl-label">0.30×</span>
-          <input type="range" id="wiSlider" min="30" max="100" value="85" step="1" oninput="updateWhatIf()">
-          <span class="sl-label">1.00×</span>
-          <span class="sl-val" id="sliderVal">0.85×</span>
+          <span class="sl-label">1</span>
+          <input type="range" id="wiSlider" min="1" max="10" value="5" step="1" oninput="updateWhatIf()">
+          <span class="sl-label">10</span>
+          <span class="sl-val" id="sliderVal">5</span>
         </div>
       </div>
       <div style="display:flex;gap:12px;flex:1;min-height:0;">
-        <div class="chart-card" style="flex:1;min-height:0;">
-          <div class="chart-card-title">Shipping Cost per 1,000 Miles</div>
-          <div class="chart-card-sub">By product — from dim_products</div>
-          <div class="chart-wrap"><canvas id="shipChart"></canvas></div>
+        <!-- LEFT: Running Total + By Product -->
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;">
+          <div class="chart-card" style="flex:1;min-height:0;">
+            <div class="chart-card-title">Impact of Shipped Quantity on Shipping Cost</div>
+            <div class="chart-card-sub">Running total · Baseline vs What-If vs Difference</div>
+            <div class="chart-wrap"><canvas id="shipRunChart"></canvas></div>
+          </div>
+          <div class="chart-card" style="flex:1;min-height:0;">
+            <div class="chart-card-title">Impact of Shipping Quantity on Costs by Product</div>
+            <div class="chart-card-sub">Baseline vs What-If vs Difference · top 15 products</div>
+            <div class="chart-wrap"><canvas id="shipProdChart"></canvas></div>
+          </div>
         </div>
-        <div class="chart-card" style="flex:1;min-height:0;overflow-y:auto;">
-          <div class="chart-card-title">Quantity Multiplier Table</div>
-          <div class="chart-card-sub">Step-function bulk discount tiers</div>
-          <table style="width:100%;border-collapse:collapse;font-family:'DM Mono',monospace;font-size:11px;margin-top:4px;">
-            <thead><tr>
-              <th style="text-align:left;padding:6px 10px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--grey-mid);border-bottom:1px solid var(--border);">Order Qty</th>
-              <th style="text-align:left;padding:6px 10px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--grey-mid);border-bottom:1px solid var(--border);">Multiplier</th>
-              <th style="text-align:left;padding:6px 10px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--grey-mid);border-bottom:1px solid var(--border);">Saving</th>
-            </tr></thead>
-            <tbody id="multiTable"></tbody>
-          </table>
+        <!-- RIGHT: Avg Qty by Category + Bubble Map -->
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;">
+          <div class="chart-card" style="flex:2;min-height:0;">
+            <div class="chart-card-title">Average Quantity by Category</div>
+            <div class="chart-card-sub">Average units per order by product category</div>
+            <div class="chart-wrap"><canvas id="shipAvgChart"></canvas></div>
+          </div>
+          <div class="chart-card" style="flex:3;min-height:0;display:flex;flex-direction:column;">
+            <div class="chart-card-title">Shipping Cost by State and Region</div>
+            <div class="chart-card-sub">Bubble size = total shipping cost · colour = region</div>
+            <div id="shipBubbleMap" style="flex:1;min-height:0;"></div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- ══ MARKET BASKET ══ -->
     <div class="panel" id="panel-basket">
-      <div style="display:flex;gap:12px;flex-shrink:0;margin-bottom:12px;">
-        <div class="chart-card" style="flex:1;min-width:0;">
-          <div class="chart-card-title" id="basketChartTitle">Combination of Purchased Items</div>
-          <div class="chart-card-sub" id="basketChartSub">Select a product from the left panel</div>
-          <div style="height:230px;position:relative;"><canvas id="basketChart"></canvas></div>
+      <!-- TOP: Description slicer + Combination chart (fixed height) -->
+      <div style="display:flex;gap:12px;flex-shrink:0;height:290px;margin-bottom:12px;">
+        <div style="width:220px;flex-shrink:0;background:var(--panel);border:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;">
+          <div style="font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);padding:10px 14px 8px;border-bottom:1px solid var(--border);flex-shrink:0;">Description</div>
+          <div id="basketDescSlicer" style="overflow-y:auto;flex:1;padding:4px 0;"></div>
         </div>
-        <div class="chart-card" style="flex:1;min-width:0;overflow-y:auto;">
-          <div class="chart-card-title">Top Pairings — Detail</div>
-          <div class="chart-card-sub">Ranked by co-purchase count</div>
-          <table class="pair-table">
-            <thead><tr><th>#</th><th>Paired With</th><th>Count</th></tr></thead>
-            <tbody id="pairTableBody"><tr><td colspan="3" style="padding:16px 10px;color:var(--grey-mid);font-size:11px;">Select a product to view pairings.</td></tr></tbody>
-          </table>
+        <div class="chart-card" style="flex:1;min-width:0;display:flex;flex-direction:column;">
+          <div class="chart-card-title" id="basketChartTitle">Combination of Purchased Items</div>
+          <div class="chart-card-sub" id="basketChartSub">Select a product from the list</div>
+          <div class="chart-wrap"><canvas id="basketChart"></canvas></div>
         </div>
       </div>
-      <div class="chart-card" style="flex:1;min-height:0;">
-        <div class="chart-card-title">Total Sales and Profit % by Description</div>
-        <div class="chart-card-sub">All products · bars = total revenue · line = profit %</div>
-        <div class="chart-wrap"><canvas id="salesProfitChart"></canvas></div>
+      <!-- BOTTOM: Sales/Profit chart (fills remaining space) -->
+      <div style="display:flex;flex:1;min-height:0;">
+        <div class="chart-card" style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;">
+          <div class="chart-card-title">Total Sales and Profit % by Description</div>
+          <div class="chart-card-sub">All products · bars = revenue · line = profit %</div>
+          <div class="chart-wrap"><canvas id="salesProfitChart"></canvas></div>
+        </div>
       </div>
     </div>
 
@@ -384,6 +417,30 @@ const CAT_COLOR_DIM = {
   'Cleaning':    'rgba(96,165,250,0.18)'
 };
 
+// Full product names (from dim_products.csv) → basket data key mapping, sorted A-Z
+const BASKET_PRODUCTS = [
+  {label:'Canned Cat Food',                                                                       key:'Canned Cat Food'},
+  {label:'ChomChom Pet Hair Remover - Reusable Cat and Dog Hair Remover',                         key:'ChomChom Hair Remover'},
+  {label:'Dog and Puppy Pads',                                                                    key:'Dog and Puppy Pads'},
+  {label:'Earth Rated Dog Poop Bags',                                                             key:'Earth Rated Dog Poop Bags'},
+  {label:'Indoor Pet Camera',                                                                     key:'Indoor Pet Camera'},
+  {label:'Litter Slide Multi-Cat Scented Clumping Clay Cat Litter',                               key:'Cat Litter'},
+  {label:'Memory Foam Pet Beds for Small, Medium, and Large Dogs and Cats',                       key:'Memory Foam Pet Beds'},
+  {label:'Milk-Bone MaroSnacks Dog Treats with Real Bone',                                        key:'Milk-Bone Dog Treats'},
+  {label:'NexGard Chew for Dogs',                                                                 key:'NexGard Chew for Dogs'},
+  {label:'Pet Grooming Brush',                                                                    key:'Pet Grooming Brush'},
+  {label:'Pet Hair Remover',                                                                      key:'Pet Hair Remover'},
+  {label:'Pet Odor Eliminator',                                                                   key:'Pet Odor Eliminator'},
+  {label:'ProBiotic Supplements for Dogs',                                                        key:'ProBiotic Supplements'},
+  {label:'Purina ONE SmartBlend Natural Adult Chicken 10lb',                                      key:'Purina ONE SmartBlend 10lb'},
+  {label:'Purina Pro Plan Adult Sensitive Skin',                                                  key:'Purina Pro Plan'},
+  {label:'Rechargeable Pet Nail Grinder',                                                         key:'Rechargeable Pet Nail Grinder'},
+  {label:'Sheba Perfect Portions Paté Wet Cat Food',                                              key:'Sheba Wet Cat Food'},
+  {label:'Taste of the Wild High Prairie Grain-Free Dry Dog Food 40lb',                           key:'Taste of the Wild 40lb'},
+  {label:'Templation Soft Cat Treats',                                                            key:'Templation Cat Treats'},
+  {label:'UltraSound Dog Barking Deterrent',                                                      key:'UltraSound Barking Deterrent'},
+];
+
 // US state tile-map grid positions [row, col] (11 cols × 9 rows)
 const TILE_POS = {
   ME:[0,10],
@@ -398,6 +455,52 @@ const TILE_POS = {
 };
 
 // ─────────────────────────────────────────────
+// SHIPPING DATA (computed from fact_sales + dim_products, exact DAX formula)
+// Baseline = A + 0.7*B  |  WhatIf(factor) = A + factor*B
+// A = Σ ShippingCost per row, B = Σ ShippingCost*(Qty-1) for Qty≠1
+// ─────────────────────────────────────────────
+const SHIP_MONTHS = ['Dec 20','Jan 21','Feb 21','Mar 21','Apr 21','May 21','Jun 21','Jul 21','Aug 21','Sep 21','Oct 21','Nov 21','Dec 21'];
+
+// Per-month A and B components (from compute_shipping.js)
+const SHIP_MON_A = [11974,9362,9093,13206,11054,18243,15563,14905,13527,16777,17831,25664,7321];
+const SHIP_MON_B = [20425,13687,11232,16330,10077,24732,23283,20780,24747,21366,27460,51095,15934];
+
+// Per-product A and B (top 15 by baseline, sorted desc)
+const SHIP_BY_PROD = [
+  {d:'Taste of Wild 40lb',  a:43660, b:22960},
+  {d:'Memory Foam Beds',    a:20520, b:24912},
+  {d:'Dog & Puppy Pads',    a:11620, b:24945},
+  {d:'Earth Rated Bags',    a:8564,  b:26860},
+  {d:'Cat Litter',          a:10593, b:21195},
+  {d:'Templation Treats',   a:6174,  b:26052},
+  {d:'Pet Odor Elim.',      a:5920,  b:20832},
+  {d:'Milk-Bone Treats',    a:7398,  b:17190},
+  {d:'Sheba Wet Food',      a:3628,  b:20995},
+  {d:'Purina ONE 10lb',     a:11650, b:7500},
+  {d:'Pet Grm. Brush',      a:8060,  b:11480},
+  {d:'Pet Hair Rmvr',       a:6245,  b:13030},
+  {d:'Canned Cat Food',     a:3429,  b:15111},
+  {d:'Purina Pro Plan',     a:7400,  b:5510},
+  {d:'ProBiotic Supps',     a:4746,  b:9142},
+];
+
+const SHIP_BY_STATE = {"VA":7531,"CA":67851,"FL":31114,"MI":6946,"IN":8483,"WA":11361,"TX":31926,"NJ":22950,"MO":5044,"NY":20152,"KY":3811,"NV":14172,"MA":14460,"MN":5543,"PA":12924,"WI":6891,"NH":506,"IL":11619,"MD":6056,"UT":2712,"NC":10762,"ID":1391,"LA":7878,"ME":760,"MS":927,"SC":2607,"NM":1709,"GA":7740,"AZ":4793,"SD":773,"OR":3887,"AK":405,"CT":3792,"CO":4619,"IA":2041,"KS":1689,"OH":9056,"MT":376,"OK":1876,"TN":4060,"WV":2783,"NE":1460,"DC":359,"AR":1558,"ND":8900,"RI":427,"HI":377,"AL":2318,"WY":366,"DE":3269,"VT":141};
+
+const STATE_REGION = {"AK":"Other","AL":"East","AR":"Central","AZ":"West","CA":"West","CO":"Central","CT":"East","DC":"East","DE":"East","FL":"East","GA":"East","HI":"Other","IA":"Central","ID":"West","IL":"Central","IN":"Central","KS":"Central","KY":"Central","LA":"Central","MA":"East","MD":"East","ME":"East","MI":"Central","MN":"Central","MO":"Central","MS":"Central","MT":"West","NC":"East","ND":"Central","NE":"Central","NH":"East","NJ":"East","NM":"West","NV":"West","NY":"East","OH":"Central","OK":"Central","OR":"West","PA":"East","RI":"East","SC":"East","SD":"Central","TN":"East","TX":"Central","UT":"West","VA":"East","VT":"East","WA":"West","WI":"Central","WV":"East","WY":"West"};
+
+const SHIP_AVG_CAT = [
+  {cat:'Pet Food',          avg:5.08},
+  {cat:'Cleaning Supplies', avg:4.80},
+  {cat:'Disposables',       avg:3.69},
+  {cat:'Food',              avg:3.05},
+  {cat:'Supplements',       avg:2.63},
+  {cat:'Grooming',          avg:2.33},
+  {cat:'Electronics',       avg:1.39},
+];
+
+const REGION_COLOR = {Central:'#60a5fa', East:'#818cf8', West:'#c084fc', Other:'#fb923c'};
+
+// ─────────────────────────────────────────────
 // CHART.JS DEFAULTS
 // ─────────────────────────────────────────────
 const TEAL='#3dd6c8', TEAL_DIM='rgba(61,214,200,0.14)', GREY='#888';
@@ -409,7 +512,8 @@ Chart.defaults.font.family = "'Barlow',sans-serif";
 // STATE
 // ─────────────────────────────────────────────
 let selectedState = 'ALL', selectedDesc = null, currentPage = 'home';
-let descCatChart = null, shipChart = null, basketChart = null, salesProfitChart = null;
+let descCatChart = null, basketChart = null, salesProfitChart = null;
+let shipRunChart = null, shipProdChart = null, shipAvgChart = null, shipBubbleBuilt = false;
 let usMapLoaded = false;
 
 // FIPS code → state abbreviation
@@ -422,6 +526,23 @@ const FIPS_STATE = {
   '45':'SC','46':'SD','47':'TN','48':'TX','49':'UT','50':'VT','51':'VA','53':'WA',
   '54':'WV','55':'WI','56':'WY'
 };
+
+// Abbreviation → full state name
+const STATE_FULL = {
+  AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',
+  CO:'Colorado',CT:'Connecticut',DC:'Washington D.C.',DE:'Delaware',FL:'Florida',
+  GA:'Georgia',HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',
+  KS:'Kansas',KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',
+  MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',
+  NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',
+  NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',
+  OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',
+  TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',VA:'Virginia',WA:'Washington',
+  WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming'
+};
+function stateLabel(abbr) {
+  return abbr === 'ALL' ? 'All States' : (STATE_FULL[abbr] || abbr);
+}
 
 function fmtK(n) {
   if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
@@ -438,20 +559,29 @@ function buildStateSlicer() {
   ['ALL', ...DATA.sl].forEach(st => {
     const d = document.createElement('div');
     d.className = 'slicer-item' + (st === selectedState ? ' active' : '');
-    d.textContent = st === 'ALL' ? 'All States' : st;
+    d.dataset.stateAbbr = st;
+    d.textContent = stateLabel(st);
     d.onclick = () => selectState(st);
     el.appendChild(d);
   });
 }
 
-function buildDescSlicer() {
-  const el = document.getElementById('descSlicer');
-  el.innerHTML = '';
-  DATA.ds.forEach(ds => {
+
+function buildBasketSlicer() {
+  const el = document.getElementById('basketDescSlicer');
+  if (el.children.length) return; // already built
+  BASKET_PRODUCTS.forEach(p => {
     const d = document.createElement('div');
-    d.className = 'slicer-item' + (ds === selectedDesc ? ' active' : '');
-    d.textContent = ds;
-    d.onclick = () => selectDesc(ds);
+    d.className = 'basket-item' + (p.key === selectedDesc ? ' active' : '');
+    d.dataset.key = p.key;
+    d.innerHTML = '<div class="basket-check"></div><span>' + p.label + '</span>';
+    d.onclick = () => {
+      selectedDesc = (selectedDesc === p.key) ? null : p.key;
+      document.querySelectorAll('#basketDescSlicer .basket-item').forEach(el =>
+        el.classList.toggle('active', el.dataset.key === selectedDesc)
+      );
+      updateBasket();
+    };
     el.appendChild(d);
   });
 }
@@ -459,17 +589,11 @@ function buildDescSlicer() {
 function selectState(st) {
   selectedState = st;
   document.querySelectorAll('#stateSlicer .slicer-item').forEach(el =>
-    el.classList.toggle('active', el.textContent === (st === 'ALL' ? 'All States' : st))
+    el.classList.toggle('active', el.dataset.stateAbbr === st)
   );
-  if (currentPage === 'exec') updateExec();
-}
-
-function selectDesc(ds) {
-  selectedDesc = ds;
-  document.querySelectorAll('#descSlicer .slicer-item').forEach(el =>
-    el.classList.toggle('active', el.textContent === ds)
-  );
-  updateBasket();
+  if (currentPage === 'exec')   updateExec();
+  if (currentPage === 'ship')   updateShipping();
+  if (currentPage === 'basket') updateBasket();
 }
 
 // ─────────────────────────────────────────────
@@ -494,13 +618,11 @@ function setPage(name, btn) {
   } else {
     sidebar.style.display = 'flex';
     sidebar.scrollTop = 0;
-    const showDesc  = (name === 'basket');
-    const showState = !showDesc;
-    stateLabel.style.display  = showState ? '' : 'none';
-    stateSlicer.style.display = showState ? '' : 'none';
-    descDivider.style.display = showDesc  ? '' : 'none';
-    descLabel.style.display   = showDesc  ? '' : 'none';
-    descSlicer.style.display  = showDesc  ? '' : 'none';
+    stateLabel.style.display  = '';
+    stateSlicer.style.display = '';
+    descDivider.style.display = 'none';
+    descLabel.style.display   = 'none';
+    descSlicer.style.display  = 'none';
   }
 
   if (name === 'exec')   { updateExec(); }
@@ -521,7 +643,7 @@ function updateExec() {
   document.getElementById('kpi-sales').textContent  = fmtK(d.s);
   document.getElementById('kpi-profit').textContent = fmtK(Math.round(d.s * d.m / 100));
   document.getElementById('kpi-margin').textContent = d.m + '%';
-  document.getElementById('kpi-state-label').textContent = selectedState === 'ALL' ? 'All States' : selectedState;
+  document.getElementById('kpi-state-label').textContent = stateLabel(selectedState);
 
   buildDescCatChart(d);
   buildTreemap(d);
@@ -545,8 +667,7 @@ function buildDescCatChart(d) {
     }));
   }
 
-  document.getElementById('descCatSub').textContent =
-    (selectedState === 'ALL' ? 'All States' : selectedState) + ' · sorted by revenue';
+  document.getElementById('descCatSub').textContent = stateLabel(selectedState) + ' · sorted by revenue';
 
   const labels   = items.map(x => x.label);
   const vals     = items.map(x => x.val);
@@ -707,54 +828,306 @@ function updateMapColors() {
 // SHIPPING
 // ─────────────────────────────────────────────
 function updateShipping() {
-  if (shipChart) return;
-  const labels = ['Taste of Wild 40lb','Memory Foam Beds','Cat Litter','Purina ONE 10lb','Purina Pro Plan','Canned Cat Food','ProBiotic Supps','Indoor Camera','NexGard Chew','Cat Treats'];
-  const vals   = [20, 12, 9, 10, 10, 9, 7, 7, 7, 6];
-  shipChart = new Chart(document.getElementById('shipChart'), {
-    type: 'bar',
-    data: { labels, datasets: [{ data: vals, backgroundColor: TEAL_DIM, borderColor: TEAL, borderWidth: 1, borderRadius: 2 }] },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' $' + c.raw + ' per 1,000 mi' } } },
-      scales: { x: { ticks: { callback: v => '$' + v } }, y: { ticks: { font: { size: 9 } } } }
-    }
-  });
-  const rows = [['1','1.00×','Full cost'],['2–3','0.75×','25% saving'],['4–6','0.55×','45% saving'],['7–8','0.45×','55% saving'],['9+','0.40×','60% saving'],['Bulk','0.30×','70% saving']];
-  document.getElementById('multiTable').innerHTML = rows.map(r =>
-    `<tr>${r.map(v => `<td style="padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04);${v.includes('×') ? 'color:var(--teal);font-weight:600;' : ''}">${v}</td>`).join('')}</tr>`
-  ).join('');
+  buildShipRunChart();
+  buildShipProdChart();
+  buildShipAvgChart();
+  if (!shipBubbleBuilt) buildShipBubbleMap();
+  else                  updateBubbleHighlight();
   updateWhatIf();
 }
 
+// DAX Blended Shipping Cost Factor step function (exact match)
+function getFactor(q) {
+  if (q <= 1) return 1.0;
+  if (q <= 2) return 0.8;
+  if (q <= 4) return 0.6;
+  if (q <= 7) return 0.5;
+  if (q <= 9) return 0.4;
+  return 0.3;
+}
+
+function getStateShip() {
+  const ss = window.SHIP_STATE;
+  return (ss && (ss[selectedState] || ss['ALL'])) || { ma: SHIP_MON_A, mb: SHIP_MON_B };
+}
+function shipBaseline() {
+  const s = getStateShip();
+  return s.ma.reduce((sum, a, i) => sum + Math.round(a + 0.7 * s.mb[i]), 0);
+}
+function shipWhatIf(factor) {
+  const s = getStateShip();
+  return s.ma.reduce((sum, a, i) => sum + Math.round(a + factor * s.mb[i]), 0);
+}
+
 function updateWhatIf() {
-  const mult = document.getElementById('wiSlider').value / 100;
-  const baseline = 385150;
-  const whatif = Math.round(baseline * mult);
-  document.getElementById('sliderVal').textContent = mult.toFixed(2) + '×';
-  document.getElementById('wi-cost').textContent = '$' + whatif.toLocaleString();
-  document.getElementById('wi-saving').textContent = '$' + (baseline - whatif).toLocaleString();
+  const qty    = parseInt(document.getElementById('wiSlider').value);
+  const factor = getFactor(qty);
+  const baseline = shipBaseline();
+  const whatif   = shipWhatIf(factor);
+  const diff     = baseline - whatif;
+  document.getElementById('sliderVal').textContent  = qty;
+  document.getElementById('wi-baseline').textContent = '$' + baseline.toLocaleString();
+  document.getElementById('wi-cost').textContent     = '$' + whatif.toLocaleString();
+  document.getElementById('wi-saving').textContent   =
+    diff < 0 ? '($' + Math.abs(diff).toLocaleString() + ')' : '$' + diff.toLocaleString();
+  if (shipRunChart)  buildShipRunChart();
+  if (shipProdChart) buildShipProdChart();
+}
+
+function getShipTotals(factor) {
+  const s = getStateShip();
+  let rb = 0, rw = 0;
+  const runBL = s.ma.map((a, i) => { rb += Math.round(a + 0.7    * s.mb[i]); return rb; });
+  const runWI = s.ma.map((a, i) => { rw += Math.round(a + factor * s.mb[i]); return rw; });
+  const diff  = runBL.map((v, i) => v - runWI[i]);
+  return { runBL, runWI, diff };
+}
+
+function buildShipRunChart() {
+  const mult   = getFactor(parseInt(document.getElementById('wiSlider').value));
+  const { runBL, runWI, diff } = getShipTotals(mult);
+  const saving = runBL[runBL.length - 1] - runWI[runWI.length - 1];
+  const savingFlat = SHIP_MONTHS.map(() => saving);
+  const savingLabel = 'Shipping Savings: $' + saving.toLocaleString();
+
+  if (shipRunChart) {
+    shipRunChart.data.datasets[0].data = runBL;
+    shipRunChart.data.datasets[1].data = runWI;
+    shipRunChart.data.datasets[2].data = diff;
+    shipRunChart.data.datasets[3].data  = savingFlat;
+    shipRunChart.data.datasets[3].label = savingLabel;
+    shipRunChart.update('none');
+    return;
+  }
+
+  const savingsLabelPlugin = {
+    id: 'savingsLabel',
+    afterDraw(chart) {
+      const ds = chart.data.datasets[3];
+      if (!ds || !ds.data.length) return;
+      const v = ds.data[0];
+      if (v == null) return;
+      const ctx  = chart.ctx;
+      const yPx  = chart.scales.y.getPixelForValue(v);
+      const xPx  = chart.scales.x.left + 6;
+      ctx.save();
+      ctx.fillStyle = '#f87171';
+      ctx.font = "bold 9px 'Barlow', sans-serif";
+      ctx.fillText(ds.label, xPx, yPx - 5);
+      ctx.restore();
+    }
+  };
+
+  shipRunChart = new Chart(document.getElementById('shipRunChart'), {
+    type: 'line',
+    data: {
+      labels: SHIP_MONTHS,
+      datasets: [
+        { label:'Baseline Running Total',   data:runBL,     borderColor:'#f87171', backgroundColor:'rgba(248,113,113,0.12)', fill:true,  tension:0.35, borderWidth:2,   pointRadius:0 },
+        { label:'What-If Running Total',    data:runWI,     borderColor:'#60a5fa', backgroundColor:'rgba(96,165,250,0.12)',  fill:true,  tension:0.35, borderWidth:2,   pointRadius:0 },
+        { label:'Difference Running Total', data:diff,      borderColor:'rgba(255,255,255,0.5)', backgroundColor:'transparent', fill:false, tension:0.35, borderWidth:1.5, pointRadius:0, borderDash:[4,3] },
+        { label:savingLabel,                data:savingFlat, borderColor:'#f87171', backgroundColor:'transparent', fill:false, tension:0, borderWidth:1.5, pointRadius:0, borderDash:[6,4] },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{
+          display:true, position:'top', align:'start',
+          labels:{ boxWidth:8, font:{size:8}, color:GREY, padding:8,
+            filter: item => item.datasetIndex < 3
+          }
+        },
+        tooltip:{
+          callbacks:{ label: c => ' '+c.dataset.label+': $'+c.raw.toLocaleString() },
+          filter: item => item.datasetIndex < 3
+        }
+      },
+      scales: {
+        x:{ ticks:{ font:{size:9} } },
+        y:{ ticks:{ callback: v => '$'+(v/1000).toFixed(0)+'K', font:{size:9} } }
+      }
+    },
+    plugins: [savingsLabelPlugin]
+  });
+}
+
+function buildShipProdChart() {
+  const factor = getFactor(parseInt(document.getElementById('wiSlider').value));
+  const labels  = SHIP_BY_PROD.map(p => p.d);
+  const ss      = getStateShip();
+  const baseline = SHIP_BY_PROD.map((p, i) => {
+    const [a, b] = ss.pr ? ss.pr[i] : [p.a, p.b];
+    return Math.round(a + 0.7    * b);
+  });
+  const whatif   = SHIP_BY_PROD.map((p, i) => {
+    const [a, b] = ss.pr ? ss.pr[i] : [p.a, p.b];
+    return Math.round(a + factor * b);
+  });
+  const diff     = baseline.map((v, i) => v - whatif[i]);
+
+  if (shipProdChart) {
+    shipProdChart.data.datasets[0].data = baseline;
+    shipProdChart.data.datasets[1].data = whatif;
+    shipProdChart.data.datasets[2].data = diff;
+    shipProdChart.update('none');
+    return;
+  }
+
+  const diffFmt = v => {
+    if (v === 0) return '$0K';
+    const k = Math.abs(v / 1000).toFixed(0);
+    return v < 0 ? '($' + k + 'K)' : '$' + k + 'K';
+  };
+
+  shipProdChart = new Chart(document.getElementById('shipProdChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { type:'bar',  label:'Shipping (Baseline)',   data:baseline, backgroundColor:'rgba(248,113,113,0.35)', borderColor:'#f87171', borderWidth:1, yAxisID:'y' },
+        { type:'bar',  label:'Shipping (What-If)',    data:whatif,   backgroundColor:'rgba(96,165,250,0.35)',  borderColor:'#60a5fa', borderWidth:1, yAxisID:'y' },
+        { type:'line', label:'Shipping (Difference)', data:diff,     borderColor:'rgba(255,255,255,0.8)',      backgroundColor:'transparent', borderWidth:2, pointRadius:3, tension:0.2, yAxisID:'y2' },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{ display:true, position:'top', align:'start', labels:{ boxWidth:8, font:{size:8}, color:GREY, padding:6 } },
+        tooltip:{ callbacks:{ label: c => {
+          if (c.datasetIndex === 2) {
+            const v = c.raw;
+            return ` Shipping (Difference): ${v < 0 ? '($' + Math.abs(v).toLocaleString() + ')' : '$' + v.toLocaleString()}`;
+          }
+          return ` ${c.dataset.label}: $${c.raw.toLocaleString()}`;
+        }}}
+      },
+      scales: {
+        x:{ ticks:{ font:{size:8}, maxRotation:40, minRotation:30 } },
+        y:{
+          type:'linear', position:'left',
+          ticks:{ callback: v => '$'+(v/1000).toFixed(0)+'K', font:{size:9} }
+        },
+        y2:{
+          type:'linear', position:'right',
+          grid:{ drawOnChartArea:false },
+          ticks:{ callback: diffFmt, font:{size:9} },
+          title:{ display:true, text:'Shipping (Diff)', font:{size:8}, color:GREY }
+        }
+      }
+    }
+  });
+}
+
+function getShipAvgVals() {
+  const ss = window.SHIP_STATE;
+  const sd = ss && (ss[selectedState] || ss['ALL']);
+  if (sd && sd.ac) return sd.ac;
+  return SHIP_AVG_CAT.map(c => c.avg);
+}
+
+function buildShipAvgChart() {
+  const labels = SHIP_AVG_CAT.map(c => c.cat);
+  const vals   = getShipAvgVals();
+  if (shipAvgChart) {
+    shipAvgChart.data.datasets[0].data = vals;
+    shipAvgChart.update('none');
+    return;
+  }
+  shipAvgChart = new Chart(document.getElementById('shipAvgChart'), {
+    type:'bar',
+    data:{ labels, datasets:[{ data:vals, backgroundColor:'rgba(148,163,184,0.25)', borderColor:'#94a3b8', borderWidth:1, borderRadius:3 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c=>' Avg qty: '+c.raw } } },
+      scales:{
+        x:{ ticks:{ font:{size:9} } },
+        y:{ beginAtZero:true, ticks:{ font:{size:9} }, title:{ display:true, text:'Average Quantity', font:{size:8}, color:GREY } }
+      }
+    }
+  });
+}
+
+function buildShipBubbleMap() {
+  shipBubbleBuilt = true;
+  const us = window.US_STATES_TOPO;
+  if (!us) return;
+  const container = document.getElementById('shipBubbleMap');
+  const w = container.clientWidth || 380, h = container.clientHeight || 220;
+  container.innerHTML = '';
+  const svg = d3.select(container).append('svg')
+    .attr('width','100%').attr('height','100%')
+    .attr('viewBox',`0 0 ${w} ${h}`)
+    .attr('preserveAspectRatio','xMidYMid meet');
+
+  const projection = d3.geoAlbersUsa().fitSize([w, h], topojson.feature(us, us.objects.states));
+  const path = d3.geoPath().projection(projection);
+
+  svg.selectAll('path')
+    .data(topojson.feature(us, us.objects.states).features)
+    .enter().append('path')
+    .attr('d', path)
+    .attr('fill','rgba(255,255,255,0.04)')
+    .attr('stroke','rgba(255,255,255,0.14)')
+    .attr('stroke-width', 0.5);
+
+  const maxShip = Math.max(...Object.values(SHIP_BY_STATE));
+  topojson.feature(us, us.objects.states).features.forEach(feature => {
+    const st = FIPS_STATE[String(feature.id).padStart(2,'0')];
+    if (!st || !SHIP_BY_STATE[st]) return;
+    const c = projection(d3.geoCentroid(feature));
+    if (!c) return;
+    const r = Math.max(3, Math.sqrt(SHIP_BY_STATE[st] / maxShip) * 26);
+    const color = REGION_COLOR[STATE_REGION[st]] || '#888';
+    const g = svg.append('g');
+    g.append('circle').attr('cx',c[0]).attr('cy',c[1]).attr('r',r)
+      .attr('data-state', st)
+      .attr('fill',color).attr('fill-opacity',0.55)
+      .attr('stroke',color).attr('stroke-width',0.8).attr('stroke-opacity',0.9);
+    g.append('title').text(st+': $'+SHIP_BY_STATE[st].toLocaleString()+' ('+STATE_REGION[st]+')');
+  });
+
+  updateBubbleHighlight();
+
+  // Region legend
+  const regions = ['Central','East','West','Other'];
+  const lg = svg.append('g').attr('transform',`translate(6,${h-16})`);
+  regions.forEach((r, i) => {
+    const gx = lg.append('g').attr('transform',`translate(${i*68},0)`);
+    gx.append('circle').attr('r',4).attr('fill',REGION_COLOR[r]).attr('fill-opacity',0.7);
+    gx.append('text').attr('x',8).attr('y',4).attr('fill',GREY).attr('font-size','8px')
+      .attr('font-family',"'DM Mono',monospace").text(r);
+  });
+}
+
+function updateBubbleHighlight() {
+  document.querySelectorAll('#shipBubbleMap circle[data-state]').forEach(c => {
+    const st     = c.getAttribute('data-state');
+    const active = selectedState === 'ALL' || st === selectedState;
+    c.setAttribute('fill-opacity',   active ? 0.65 : 0.12);
+    c.setAttribute('stroke-opacity', active ? 0.95 : 0.2);
+    c.setAttribute('stroke-width',   selectedState !== 'ALL' && st === selectedState ? 1.8 : 0.8);
+  });
 }
 
 // ─────────────────────────────────────────────
 // MARKET BASKET
 // ─────────────────────────────────────────────
 function updateBasket() {
+  buildBasketSlicer();
   // Build the static bottom combo chart once; defer so flex layout resolves first
   if (!salesProfitChart) setTimeout(buildSalesProfitChart, 60);
 
   if (!selectedDesc) {
     document.getElementById('basketChartTitle').textContent = 'Combination of Purchased Items';
-    document.getElementById('basketChartSub').textContent   = 'Select a product from the left panel';
-    // Destroy existing basket chart so canvas is clean
+    document.getElementById('basketChartSub').textContent   = 'Select a product from the list';
     if (basketChart) { basketChart.destroy(); basketChart = null; }
-    document.getElementById('pairTableBody').innerHTML =
-      '<tr><td colspan="3" style="padding:16px 10px;color:var(--grey-mid);font-size:11px;">Select a product to view pairings.</td></tr>';
     return;
   }
 
-  const pairs = DATA.bk[selectedDesc] || [];
+  // Use real per-state basket data from basket-state-data.js
+  const bkSource = (window.BK_STATE && window.BK_STATE[selectedState]) || {};
+  const pairs = bkSource[selectedDesc] || [];
   if (!pairs.length) return;
 
   const labels = pairs.map(p => p.d.length > 28 ? p.d.slice(0, 28) + '…' : p.d);
@@ -762,7 +1135,7 @@ function updateBasket() {
   const maxC   = vals[0] || 1;
 
   document.getElementById('basketChartTitle').textContent = 'Combination of Purchased Items';
-  document.getElementById('basketChartSub').textContent   = 'Co-purchased with: ' + selectedDesc;
+  document.getElementById('basketChartSub').textContent   = stateLabel(selectedState) + ' · co-purchased with: ' + selectedDesc;
 
   // Always destroy + recreate for reliability
   if (basketChart) { basketChart.destroy(); basketChart = null; }
@@ -783,25 +1156,22 @@ function updateBasket() {
       indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: false,
+      layout: { padding: { right: 8 } },
       plugins: {
         legend: { display: false },
         tooltip: { callbacks: { label: c => ' Co-purchased ' + c.raw + ' times' } }
       },
       scales: {
-        x: { ticks: { stepSize: 50, font: { size: 9 } } },
-        y: { ticks: { font: { size: 9 } } }
-      }
+        x: { ticks: { stepSize: 50, font: { size: 11 } } },
+        y: {
+          afterFit(axis) { axis.width = 200; },
+          ticks: { font: { size: 11 }, padding: 6 }
+        }
+      },
+      datasets: { bar: { barThickness: 18 } }
     }
   });
 
-  document.getElementById('pairTableBody').innerHTML = pairs.map((p, i) => `<tr>
-    <td style="padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04);font-family:'DM Mono',monospace;font-size:10px;color:var(--grey-mid)">${i + 1}</td>
-    <td style="padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;">${p.d}</td>
-    <td style="padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04)">
-      <span class="pair-count">${p.c}</span>
-      <div class="bar-mini"><div class="bar-mini-fill" style="width:${Math.round(p.c / maxC * 100)}%"></div></div>
-    </td>
-  </tr>`).join('');
 }
 
 function buildSalesProfitChart() {
@@ -879,7 +1249,6 @@ function buildSalesProfitChart() {
 // BOOT
 // ─────────────────────────────────────────────
 buildStateSlicer();
-buildDescSlicer();
 setPage('home', document.querySelector('.nav-btn.active'));
 </script>
 </body>
